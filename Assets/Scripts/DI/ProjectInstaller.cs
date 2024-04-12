@@ -7,6 +7,7 @@ namespace DI
     {
         public override void InstallBindings()
         {
+            Container.Bind<PlayerInputActions>().AsSingle().NonLazy();
             Container.Bind<GameplayAssetPreloader>().AsSingle().NonLazy();    
         }
     }

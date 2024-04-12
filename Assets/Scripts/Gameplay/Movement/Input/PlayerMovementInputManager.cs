@@ -9,9 +9,9 @@ public class PlayerMovementInputManager : IMovementInputManager
 {
     private PlayerInputActions _playerInputActions;
 
-    public PlayerMovementInputManager()
+    public PlayerMovementInputManager(PlayerInputActions playerInputActions)
     {
-        _playerInputActions = new PlayerInputActions();
+        _playerInputActions = playerInputActions;
         _playerInputActions.Enable();
     }
 

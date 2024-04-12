@@ -1,10 +1,12 @@
-﻿using StartScreen.Fsm.States.Base;
+﻿using ResourceManagement;
+using StartScreen.Fsm.States.Base;
 
 namespace StartScreen.Fsm.States
 {
     public class FsmStateSettings : FsmStateStartScreen
     {
-        public FsmStateSettings(FsmBase.Fsm fsm) : base(fsm)
+        public FsmStateSettings(FsmBase.Fsm fsm, GameplayAssetPreloader assetPreloader,
+            PlayerInputActions playerInputActions) : base(fsm, assetPreloader, playerInputActions)
         {
         }
 

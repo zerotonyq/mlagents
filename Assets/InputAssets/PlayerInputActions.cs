@@ -136,6 +136,45 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Menu"",
+            ""id"": ""027c4ff0-7b6d-4193-9e09-34a12a3460b3"",
+            ""actions"": [
+                {
+                    ""name"": ""StartScreenPress"",
+                    ""type"": ""Button"",
+                    ""id"": ""f7165439-ef47-45d6-b8a3-2dd912bfd377"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""44d817eb-8c96-4d0a-84b6-f01ffd1a9658"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""KeyboardMouse"",
+                    ""action"": ""StartScreenPress"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8ab68304-f8f6-4626-bf30-04bc76951619"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""StartScreenPress"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": [
@@ -172,6 +211,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_OnFeet = asset.FindActionMap("OnFeet", throwIfNotFound: true);
         m_OnFeet_Walk = m_OnFeet.FindAction("Walk", throwIfNotFound: true);
         m_OnFeet_Jump = m_OnFeet.FindAction("Jump", throwIfNotFound: true);
+        // Menu
+        m_Menu = asset.FindActionMap("Menu", throwIfNotFound: true);
+        m_Menu_StartScreenPress = m_Menu.FindAction("StartScreenPress", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -283,6 +325,52 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         }
     }
     public OnFeetActions @OnFeet => new OnFeetActions(this);
+
+    // Menu
+    private readonly InputActionMap m_Menu;
+    private List<IMenuActions> m_MenuActionsCallbackInterfaces = new List<IMenuActions>();
+    private readonly InputAction m_Menu_StartScreenPress;
+    public struct MenuActions
+    {
+        private @PlayerInputActions m_Wrapper;
+        public MenuActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
+        public InputAction @StartScreenPress => m_Wrapper.m_Menu_StartScreenPress;
+        public InputActionMap Get() { return m_Wrapper.m_Menu; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(MenuActions set) { return set.Get(); }
+        public void AddCallbacks(IMenuActions instance)
+        {
+            if (instance == null || m_Wrapper.m_MenuActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_MenuActionsCallbackInterfaces.Add(instance);
+            @StartScreenPress.started += instance.OnStartScreenPress;
+            @StartScreenPress.performed += instance.OnStartScreenPress;
+            @StartScreenPress.canceled += instance.OnStartScreenPress;
+        }
+
+        private void UnregisterCallbacks(IMenuActions instance)
+        {
+            @StartScreenPress.started -= instance.OnStartScreenPress;
+            @StartScreenPress.performed -= instance.OnStartScreenPress;
+            @StartScreenPress.canceled -= instance.OnStartScreenPress;
+        }
+
+        public void RemoveCallbacks(IMenuActions instance)
+        {
+            if (m_Wrapper.m_MenuActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(IMenuActions instance)
+        {
+            foreach (var item in m_Wrapper.m_MenuActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_MenuActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public MenuActions @Menu => new MenuActions(this);
     private int m_KeyboardMouseSchemeIndex = -1;
     public InputControlScheme KeyboardMouseScheme
     {
@@ -305,5 +393,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     {
         void OnWalk(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
+    }
+    public interface IMenuActions
+    {
+        void OnStartScreenPress(InputAction.CallbackContext context);
     }
 }

@@ -1,8 +1,6 @@
 ﻿using DefaultNamespace;
 using DefaultNamespace.UIManagement.GameplayHud;
 using Movement.Input.Base;
-using ResourceManagement;
-using ResourceManagement.Data;
 using Zenject;
 
 namespace DI
@@ -17,7 +15,8 @@ namespace DI
             {
                 context.Container.Resolve<TickableManager>().Add(o as ITickable);
             } );
-            
+
+
             Container.Bind<IMovementInputManager>().To<PlayerMovementInputManager>().AsSingle();
             Container.Bind<GameRuleManager>().AsSingle().NonLazy();
             Container.Bind<TimerUIManager>().AsSingle().NonLazy();
