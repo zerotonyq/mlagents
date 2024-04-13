@@ -11,25 +11,45 @@ namespace ResourceManagement
 {
     public class GameplayAssetPreloader
     {
-        private Dictionary<string, AsyncOperationHandle<ScriptableObject>> _loadingPool = new();
-
+        private Dictionary<string, AsyncOperationHandle<ScriptableObject>> _scriptableObjectLoadingPool = new();
+        private Dictionary<string, AsyncOperationHandle<GameObject>> _gameObjectLoadingPool = new();
 
         public void StartPreloadingAsset(string addressableName, Action<ScriptableObject> callbackAction)
         {
-            if (_loadingPool.ContainsKey(addressableName) && _loadingPool[addressableName].IsValid())
+            if (_scriptableObjectLoadingPool.ContainsKey(addressableName) && _scriptableObjectLoadingPool[addressableName].IsValid())
             {
-                if (_loadingPool[addressableName].IsDone)
-                    callbackAction?.Invoke(_loadingPool[addressableName].Result);
+                if (_scriptableObjectLoadingPool[addressableName].IsDone)
+                    callbackAction?.Invoke(_scriptableObjectLoadingPool[addressableName].Result);
                 else
-                    _loadingPool[addressableName].Completed += handle => callbackAction?.Invoke(handle.Result);
+                    _scriptableObjectLoadingPool[addressableName].Completed += handle => callbackAction?.Invoke(handle.Result);
             }
             else
             {
                 var handle = Addressables.LoadAssetAsync<ScriptableObject>(addressableName);
                 
-                _loadingPool.Add(addressableName, handle);
+                _scriptableObjectLoadingPool.Add(addressableName, handle);
                 
                 handle.Completed += h => { callbackAction?.Invoke(h.Result); };
+            }
+        }
+
+        public void StartPreloadingAsset(string addressableName, Action<GameObject> callbackAction)
+        {
+            if (_gameObjectLoadingPool.ContainsKey(addressableName) && _gameObjectLoadingPool[addressableName].IsValid())
+            {
+                if (_gameObjectLoadingPool[addressableName].IsDone)
+                    callbackAction?.Invoke(_gameObjectLoadingPool[addressableName].Result);
+                else
+                    _gameObjectLoadingPool[addressableName].Completed +=
+                        handle => callbackAction?.Invoke(handle.Result);
+            }
+            else
+            {
+                var handle = Addressables.LoadAssetAsync<GameObject>(addressableName);
+                
+                _gameObjectLoadingPool.Add(addressableName, handle);
+
+                handle.Completed += h => callbackAction?.Invoke(h.Result);
             }
         }
     }

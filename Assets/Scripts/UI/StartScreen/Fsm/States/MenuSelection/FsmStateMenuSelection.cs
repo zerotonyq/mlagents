@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace StartScreen.Fsm.States
 {
-    public class FsmStateMenuSelection : FsmStateStartScreen
+    public class FsmStateMenuSelection : FsmStateUI
     {
         private Canvas _scrollView;
         public FsmStateMenuSelection(FsmBase.Fsm fsm, GameplayAssetPreloader assetPreloader,

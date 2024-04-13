@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace StartScreen.Fsm.States
 {
-    public class FsmStateIntroScreen : FsmStateStartScreen
+    public class FsmStateIntroScreen : FsmStateUI
     {
         private Canvas _introScreenCanvas;
 
