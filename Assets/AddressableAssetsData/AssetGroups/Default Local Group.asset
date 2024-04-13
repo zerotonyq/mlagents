@@ -27,18 +27,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 420889f8ec8c9004aacf3e704522ffdd
-    m_Address: StartScreenPressAnyButton.asset
+  - m_GUID: 7822353edcda1a443ac46786c67ba4f2
+    m_Address: StartScreenScrollCanvas.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a14c79f62fc7cdd4b95549b32b556809
-    m_Address: StartScreenScrollView.asset
+  - m_GUID: de600e514c91b0440b85fe99f1670491
+    m_Address: StartScreenFillCanvas.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: d8d3d577390d9094faf82e89562b42fe
-    m_Address: StartScreenFill.asset
+  - m_GUID: 629cd0f73c9886148bf9db4d2b533265
+    m_Address: PressAnyButtonCanvas.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

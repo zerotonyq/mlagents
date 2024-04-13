@@ -149,6 +149,24 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Click"",
+                    ""type"": ""Button"",
+                    ""id"": ""214e4977-2633-425a-9d90-fcb5533699ef"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""MousePosition"",
+                    ""type"": ""Value"",
+                    ""id"": ""e59e91f9-8e45-4b44-bb2e-f7e12c8cd83e"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -171,6 +189,28 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": ""Gamepad"",
                     ""action"": ""StartScreenPress"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5405f224-eaa2-4aa6-bdf8-ee88c89e8f32"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""KeyboardMouse"",
+                    ""action"": ""Click"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d7409440-9a78-4510-9f69-b014a38f9ef0"",
+                    ""path"": ""<Mouse>/{Point}"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""KeyboardMouse"",
+                    ""action"": ""MousePosition"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -214,6 +254,8 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         // Menu
         m_Menu = asset.FindActionMap("Menu", throwIfNotFound: true);
         m_Menu_StartScreenPress = m_Menu.FindAction("StartScreenPress", throwIfNotFound: true);
+        m_Menu_Click = m_Menu.FindAction("Click", throwIfNotFound: true);
+        m_Menu_MousePosition = m_Menu.FindAction("MousePosition", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -330,11 +372,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Menu;
     private List<IMenuActions> m_MenuActionsCallbackInterfaces = new List<IMenuActions>();
     private readonly InputAction m_Menu_StartScreenPress;
+    private readonly InputAction m_Menu_Click;
+    private readonly InputAction m_Menu_MousePosition;
     public struct MenuActions
     {
         private @PlayerInputActions m_Wrapper;
         public MenuActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
         public InputAction @StartScreenPress => m_Wrapper.m_Menu_StartScreenPress;
+        public InputAction @Click => m_Wrapper.m_Menu_Click;
+        public InputAction @MousePosition => m_Wrapper.m_Menu_MousePosition;
         public InputActionMap Get() { return m_Wrapper.m_Menu; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -347,6 +393,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @StartScreenPress.started += instance.OnStartScreenPress;
             @StartScreenPress.performed += instance.OnStartScreenPress;
             @StartScreenPress.canceled += instance.OnStartScreenPress;
+            @Click.started += instance.OnClick;
+            @Click.performed += instance.OnClick;
+            @Click.canceled += instance.OnClick;
+            @MousePosition.started += instance.OnMousePosition;
+            @MousePosition.performed += instance.OnMousePosition;
+            @MousePosition.canceled += instance.OnMousePosition;
         }
 
         private void UnregisterCallbacks(IMenuActions instance)
@@ -354,6 +406,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @StartScreenPress.started -= instance.OnStartScreenPress;
             @StartScreenPress.performed -= instance.OnStartScreenPress;
             @StartScreenPress.canceled -= instance.OnStartScreenPress;
+            @Click.started -= instance.OnClick;
+            @Click.performed -= instance.OnClick;
+            @Click.canceled -= instance.OnClick;
+            @MousePosition.started -= instance.OnMousePosition;
+            @MousePosition.performed -= instance.OnMousePosition;
+            @MousePosition.canceled -= instance.OnMousePosition;
         }
 
         public void RemoveCallbacks(IMenuActions instance)
@@ -397,5 +455,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     public interface IMenuActions
     {
         void OnStartScreenPress(InputAction.CallbackContext context);
+        void OnClick(InputAction.CallbackContext context);
+        void OnMousePosition(InputAction.CallbackContext context);
     }
 }
