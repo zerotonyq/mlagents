@@ -1,4 +1,5 @@
-﻿using ResourceManagement;
+﻿using System;
+using ResourceManagement;
 using ResourceManagement.Data;
 using StartScreen.Fsm.States.Base;
 using UI.Data;
@@ -31,7 +32,7 @@ namespace StartScreen.Fsm.States
             PlayerInputActions.Menu.StartScreenPress.performed += _ =>
             {
                 Exit();
-                Fsm.SetState<FsmStateMenuSelection>();
+                Fsm.SetState<FsmStateMenu>();
                 PlayerInputActions.Menu.StartScreenPress.Disable();
             };
         }
@@ -44,9 +45,9 @@ namespace StartScreen.Fsm.States
 
         private void LoadIntroScreen()
         {
-            AssetPreloader.StartPreloadingAsset(AssetName.StartScreenPressAnyButton.ToString(), so =>
+            AssetPreloader.StartPreloadingAsset(AssetName.StartScreenPressAnyButton.ToString(), (GameObject o)  =>  
             {
-                _introScreenCanvas = GameObject.Instantiate((so as UICanvasAsset).Canvas, null);
+                _introScreenCanvas = GameObject.Instantiate(o, null).GetComponent<Canvas>();
                 _introScreenCanvas.worldCamera = Camera.main;
             });
         }

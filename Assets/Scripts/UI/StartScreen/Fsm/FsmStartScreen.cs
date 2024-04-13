@@ -18,14 +18,14 @@ namespace StartScreen.Fsm
 
             _fsm.AddState(new FsmStateIntroScreen(_fsm, assetPreloader, playerInputActions));
             _fsm.AddState(new FsmStateSettings(_fsm, assetPreloader, playerInputActions));
-            _fsm.AddState(new FsmStateMenuSelection(_fsm, assetPreloader, playerInputActions));
+            _fsm.AddState(new FsmStateMenu(_fsm, assetPreloader, playerInputActions));
 
             _fsm.SetState<FsmStateIntroScreen>();
 
 
-            assetPreloader.StartPreloadingAsset(AssetName.StartScreenFill.ToString(), so =>
+            assetPreloader.StartPreloadingAsset(AssetName.StartScreenFill.ToString(), (GameObject o) =>
             {
-                var fillCanvas = GameObject.Instantiate((so as UICanvasAsset).Canvas, null);
+                var fillCanvas = GameObject.Instantiate(o, null).GetComponent<Canvas>();
                 fillCanvas.worldCamera = Camera.main;
             });
         }

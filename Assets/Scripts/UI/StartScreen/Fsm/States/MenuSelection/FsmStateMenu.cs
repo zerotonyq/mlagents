@@ -2,14 +2,15 @@
 using ResourceManagement.Data;
 using StartScreen.Fsm.States.Base;
 using UI.Data;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace StartScreen.Fsm.States
 {
-    public class FsmStateMenuSelection : FsmStateUI
+    public class FsmStateMenu : FsmStateUI
     {
         private Canvas _scrollView;
-        public FsmStateMenuSelection(FsmBase.Fsm fsm, GameplayAssetPreloader assetPreloader,
+        public FsmStateMenu(FsmBase.Fsm fsm, GameplayAssetPreloader assetPreloader,
             PlayerInputActions playerInputActions) : 
             base(fsm, assetPreloader, playerInputActions)
         {
@@ -36,9 +37,9 @@ namespace StartScreen.Fsm.States
 
         private void LoadScrollView()
         {
-            AssetPreloader.StartPreloadingAsset(AssetName.StartScreenScrollView.ToString(), so =>
+            AssetPreloader.StartPreloadingAsset(AssetName.StartScreenScrollView.ToString(), (GameObject o) =>
             {
-                _scrollView = GameObject.Instantiate((so as UICanvasAsset).Canvas, null);
+                _scrollView = GameObject.Instantiate(o, null).GetComponent<Canvas>();
                 _scrollView.worldCamera = Camera.main;
             });
         }
