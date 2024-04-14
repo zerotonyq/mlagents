@@ -1,46 +1,43 @@
 ﻿using ResourceManagement;
 using ResourceManagement.Data;
 using StartScreen.Fsm.States.Base;
+using StartScreen.Fsm.States.CanvasContainer;
 using UI.Data;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace StartScreen.Fsm.States
 {
     public class FsmStateMenu : FsmStateUI
     {
-        private Canvas _scrollView;
+
+        private MenuContainer _menuContainer;
         public FsmStateMenu(FsmBase.Fsm fsm, GameplayAssetPreloader assetPreloader,
-            PlayerInputActions playerInputActions) : 
+            PlayerInputActions playerInputActions) :
             base(fsm, assetPreloader, playerInputActions)
         {
         }
 
         public override void Enter()
         {
-            if (!_scrollView)
-            {
+            if (!_menuContainer)
                 LoadScrollView();
-            }
             else
-            {
-                _scrollView.gameObject.SetActive(true);
-                _scrollView.enabled = true;
-            }
+                _menuContainer.gameObject.SetActive(true);
         }
 
         public override void Exit()
         {
-            _scrollView.enabled = false;
-            _scrollView.gameObject.SetActive(false);
+            _menuContainer.gameObject.SetActive(false);
         }
 
         private void LoadScrollView()
         {
-            AssetPreloader.StartPreloadingAsset(AssetName.StartScreenScrollView.ToString(), (GameObject o) =>
+            AssetPreloader.StartPreloadingAsset(AssetName.Menu.ToString(), (GameObject o) =>
             {
-                _scrollView = GameObject.Instantiate(o, null).GetComponent<Canvas>();
-                _scrollView.worldCamera = Camera.main;
+                _menuContainer = GameObject.Instantiate(o, null).GetComponent<MenuContainer>();
+                _menuContainer.playButton.Triggered += () => SceneManager.LoadSceneAsync(1);
             });
         }
     }

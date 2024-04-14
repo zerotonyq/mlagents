@@ -1,11 +1,15 @@
 ﻿using System;
+using DG.Tweening;
 using UnityEngine;
 
 namespace CameraRaycasting.Interactables.Base
 {
-    public abstract class Interactable : MonoBehaviour
+    public interface Interactable
     {
         public Action Triggered { get; set; }
-        public void Interact() => Triggered?.Invoke();
+
+        public virtual void Interact()
+        {
+        }
     }
 }

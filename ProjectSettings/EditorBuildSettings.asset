@@ -4,6 +4,12 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/StartScreen.unity
+    guid: 44fc36f2114c1b44aae957054fef422b
+  - enabled: 1
+    path: Assets/Scenes/TestPolygon.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: cc7eceb2e026aea4fbe111b612ff16b0, type: 2}

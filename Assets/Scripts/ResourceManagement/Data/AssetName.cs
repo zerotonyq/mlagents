@@ -12,9 +12,8 @@ namespace ResourceManagement.Data
 
         public static readonly AssetName Player = new(1, "PlayerDataAsset.asset");
         public static readonly AssetName TimerData = new(2, "TimerDataAsset.asset");
-        public static readonly AssetName StartScreenPressAnyButton = new(3, "PressAnyButtonCanvas.prefab");
-        public static readonly AssetName StartScreenScrollView = new(4, "StartScreenScrollCanvas.prefab");
-        public static readonly AssetName StartScreenFill = new(5, "StartScreenFillCanvas.prefab");
+        public static readonly AssetName Intro = new(3, "Intro.prefab");
+        public static readonly AssetName Menu = new(4, "Menu.prefab");
         
         private AssetName(int value, String name)
         {
