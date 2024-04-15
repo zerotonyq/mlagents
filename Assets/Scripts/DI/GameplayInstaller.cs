@@ -1,5 +1,5 @@
 ﻿using DefaultNamespace;
-using DefaultNamespace.UIManagement.GameplayHud;
+using Map;
 using Movement.Input.Base;
 using Zenject;
 
@@ -11,15 +11,10 @@ namespace DI
         
         public override void InstallBindings()
         {
-            Container.Bind<Timer.Timer>().AsTransient().OnInstantiated((context, o) =>
-            {
-                context.Container.Resolve<TickableManager>().Add(o as ITickable);
-            } );
-
-
             Container.Bind<IMovementInputManager>().To<PlayerMovementInputManager>().AsSingle();
-            Container.Bind<GameRulesManager>().AsSingle().NonLazy();
-            Container.Bind<TimerUIManager>().AsSingle().NonLazy();
+            Container.Bind<GameplayEntryPoint>().AsSingle().NonLazy();
+            Container.Bind<ChunkLoader>().AsSingle().NonLazy();
+            Container.Bind<ITickable>().To<ChunkTracker>().AsSingle().NonLazy();
         }
     }
 }

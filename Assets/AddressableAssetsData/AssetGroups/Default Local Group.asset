@@ -37,6 +37,16 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 48ea5217da175864e8b3a15922211622
+    m_Address: Map.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 567b5893a86be394b8724ba0b4025f33
+    m_Address: Assets/Data/Gameplay/Chunks/ChunkData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 756e1144f4dd4284e85e0703e74046a2, type: 2}
   m_SchemaSet:
