@@ -17,14 +17,12 @@ namespace StartScreen.Fsm.States
             PlayerInputActions playerInputActions) :
             base(fsm, assetPreloader, playerInputActions)
         {
+            LoadScrollView();
         }
 
         public override void Enter()
         {
-            if (!_menuContainer)
-                LoadScrollView();
-            else
-                _menuContainer.gameObject.SetActive(true);
+            _menuContainer.gameObject.SetActive(true);
         }
 
         public override void Exit()

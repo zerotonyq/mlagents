@@ -14,7 +14,7 @@ namespace ResourceManagement.Data
         public static readonly AssetName TimerData = new(2, "TimerDataAsset.asset");
         public static readonly AssetName Intro = new(3, "Intro.prefab");
         public static readonly AssetName Menu = new(4, "Menu.prefab");
-        
+        public static readonly AssetName MapData = new(5, "Map.asset");
         private AssetName(int value, String name)
         {
             _name = name;

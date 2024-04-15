@@ -18,7 +18,7 @@ namespace DI
 
 
             Container.Bind<IMovementInputManager>().To<PlayerMovementInputManager>().AsSingle();
-            Container.Bind<GameRuleManager>().AsSingle().NonLazy();
+            Container.Bind<GameRulesManager>().AsSingle().NonLazy();
             Container.Bind<TimerUIManager>().AsSingle().NonLazy();
         }
     }

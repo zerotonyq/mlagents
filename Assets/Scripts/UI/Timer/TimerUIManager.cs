@@ -13,12 +13,12 @@ namespace DefaultNamespace.UIManagement.GameplayHud
     public class TimerUIManager
     {
         private TextMeshProUGUI _timerText;
-        private GameRuleManager _gameRuleManager;
+        private GameRulesManager _gameRulesManager;
         
         [Inject]
-        public void Initialize(GameRuleManager gameRuleManager, GameplayAssetPreloader gameplayAssetPreloader)
+        public void Initialize(GameRulesManager gameRulesManager, GameplayAssetPreloader gameplayAssetPreloader)
         {
-            _gameRuleManager = gameRuleManager;
+            _gameRulesManager = gameRulesManager;
             
             gameplayAssetPreloader.StartPreloadingAsset(AssetName.TimerData.ToString(), TimerAssetDownloaded);
         }
@@ -27,9 +27,9 @@ namespace DefaultNamespace.UIManagement.GameplayHud
         {
             _timerText = CreateTimerText(so as TimerDataAsset);
 
-            _gameRuleManager.Timer.TimeUpdated += UpdatingTimerText;
+            _gameRulesManager.Timer.TimeUpdated += UpdatingTimerText;
 
-            _gameRuleManager.GameEnded += EndTimerText;
+            _gameRulesManager.GameEnded += EndTimerText;
         }
 
         private void UpdatingTimerText(float a) => _timerText.text = "REMAINING TIME: " + Math.Round(a, 2);

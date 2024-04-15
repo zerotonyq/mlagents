@@ -14,7 +14,7 @@ using Zenject;
 
 namespace DefaultNamespace
 {
-    public class GameRuleManager
+    public class GameRulesManager
     {
         public Action GameEnded;
 
@@ -22,6 +22,8 @@ namespace DefaultNamespace
         private IMovementInputManager _playerInputManager;
 
         private List<FsmMovementView> _charactersMovement = new();
+
+        public Action<Transform> PlayerCreated;
 
         [Inject]
         public void Initialize(GameplayAssetPreloader gameplayAssetPreloader, Timer.Timer timer,
@@ -39,6 +41,7 @@ namespace DefaultNamespace
         private void PlayerAssetDownloaded(ScriptableObject asset)
         {
             var character = CharacterFactory.CreateCharacter(((CharacterDataAsset)asset).prefab, _playerInputManager);
+            PlayerCreated?.Invoke(character.transform);
             _charactersMovement.Add(character.GetComponent<FsmMovementView>());
         }
         

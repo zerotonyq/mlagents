@@ -28,7 +28,7 @@ namespace StartScreen.Fsm.States
 
         public override void Exit()
         {
-            _introScreenContainer.gameObject.SetActive(false);
+            //_introScreenContainer.gameObject.SetActive(false);
         }
 
         private void LoadIntroScreen()
@@ -37,7 +37,11 @@ namespace StartScreen.Fsm.States
                 (GameObject o) =>
                 {
                     _introScreenContainer = GameObject.Instantiate(o, null).GetComponent<IntroScreenContainer>();
-                    _introScreenContainer.MenuButton.Triggered += () => OpenDoors();
+                    _introScreenContainer.MenuButton.Triggered += () =>
+                    {
+                        Fsm.SetState<FsmStateMenu>();
+                        OpenDoors();
+                    };
                 });
         }
 
@@ -47,7 +51,7 @@ namespace StartScreen.Fsm.States
             var door2 = _introScreenContainer.door2;
 
             door1.DOMove(door1.transform.position - Vector3.right * 5, 3f);
-            door2.DOMove(door2.transform.position + Vector3.right * 5, 3f).OnKill(() => Fsm.SetState<FsmStateMenu>());
+            door2.DOMove(door2.transform.position + Vector3.right * 5, 3f);
         }
     }
 }
