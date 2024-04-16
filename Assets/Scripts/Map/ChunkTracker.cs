@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using DefaultNamespace;
+using Map.Data;
 using UnityEngine;
 using Zenject;
 
@@ -8,8 +9,8 @@ namespace Map
 {
     public class ChunkTracker : ITickable 
     {
-
-        private const float OffsetToLoad = 10f;
+        private float _offsetToLoad;
+     
         private Transform _trackedTransform;
         
         private readonly bool[,] _trackedTransformAroundMatrix = new bool[3, 3];
@@ -24,13 +25,16 @@ namespace Map
         public void Initialize(GameplayEntryPoint gameplayEntryPoint, ChunkLoader chunkLoader)
         {
             _chunkLoader = chunkLoader;
+            _chunkLoader.MapDataLoaded += AssignOffsetToLoad;
             gameplayEntryPoint.PlayerCreated += OnPlayerCreated;
         }
+
+        private void AssignOffsetToLoad(MapData mapData) => _offsetToLoad = mapData.ChunkBoundLength / 4;
         
         private async void OnPlayerCreated(Transform trackedTransform)
         {
             _trackedTransform = trackedTransform;
-
+            
             _currentCoord = _chunkLoader.GetClosestChunkMatrixCoord(_trackedTransform.position);
             
             _currentChunk = await _chunkLoader.CreateChunk(_currentCoord);
@@ -53,7 +57,7 @@ namespace Map
                 throw new ArgumentException("there is no chunk to check position");
             
             //Debug.Log((trackedPosition - _currentChunk.ChunkPosition).magnitude);
-            if ((trackedPosition - _currentChunk.ChunkPosition).magnitude < OffsetToLoad)
+            if ((trackedPosition - _currentChunk.ChunkPosition).magnitude < _offsetToLoad)
                 return;
 
             ClearTrackedTransformAroundMatrix();
@@ -111,10 +115,13 @@ namespace Map
             if ((trackedPosition - _currentChunk.ChunkPosition).magnitude < _chunkLoader.ChunkLength)
                 return;
             var newChunkAndCoord = _chunkLoader.GetChunkAround(currentCoord, trackedPosition);
+            if (_currentChunk != newChunkAndCoord.Item1)
+            {
+                _chunkLoader.HideChunks(newChunkAndCoord.Item2, 1);
+            }
             _currentChunk = newChunkAndCoord.Item1;
             _currentCoord = newChunkAndCoord.Item2;
-            //Debug.Log((trackedPosition - _currentChunk.ChunkPosition).magnitude + " " + _currentChunk.ChunkPosition);
-            Debug.Log(_currentChunk.ChunkPosition);
+            
         }
     }
 }

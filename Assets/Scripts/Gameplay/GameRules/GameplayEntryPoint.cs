@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Character;
+using Cinemachine;
 using Movement.Fsm.States;
 using Movement.Fsm.View;
 using Movement.Input.Base;
@@ -24,10 +25,15 @@ namespace DefaultNamespace
         public Action<Transform> PlayerCreated;
 
         [Inject]
-        public void Initialize(GameplayAssetPreloader gameplayAssetPreloader, IMovementInputManager inputManager)
+        public void Initialize(GameplayAssetPreloader gameplayAssetPreloader, IMovementInputManager inputManager, CinemachineVirtualCamera cinemachineVirtualCamera)
         {
             _playerInputManager = inputManager;
-
+            PlayerCreated += transform =>
+            {
+                cinemachineVirtualCamera.Follow = transform;
+                cinemachineVirtualCamera.GetCinemachineComponent<CinemachineTransposer>().m_FollowOffset =
+                    new Vector3(0, 30, -15);
+            };
             gameplayAssetPreloader.StartPreloadingAsset(AssetName.Player.ToString(), PlayerAssetDownloaded);
         }
 

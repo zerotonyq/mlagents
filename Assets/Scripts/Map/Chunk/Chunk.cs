@@ -22,12 +22,23 @@ namespace Map.Chunk
             await t;
             var obj = new GameObject("o");
             obj.AddComponent<MeshRenderer>();
-            obj.AddComponent<MeshFilter>().sharedMesh = t.Result.terrainPrefab;
+            obj.AddComponent<MeshFilter>().sharedMesh = t.Result.terrainMesh;
             obj.transform.position = initPosition;
+            return new Chunk(obj, initPosition);
+        }
+        public static async Task<Chunk> ConstructFromPrefab(AssetReference ar, Vector3 initPosition)
+        {
+            Task<ChunkData> t = ar.LoadAssetAsync<ChunkData>().Task;
+            await t;
+            var obj = GameObject.Instantiate(t.Result.prefab, initPosition, Quaternion.identity, null);
             return new Chunk(obj, initPosition);
         }
         
         public Vector3 ChunkPosition => _instance.transform.position;
+
+        public void Disable() => _instance.SetActive(false);
+
+        public void Enable() => _instance.SetActive(true);
         
         public Vector3 ChunkInitPosition => _initPosition;
         
