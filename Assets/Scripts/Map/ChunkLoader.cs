@@ -13,7 +13,7 @@ namespace Map
     {
         private MapData _currentMapData;
 
-        
+
         private Vector3[,] _chunksInitPositions;
         private Chunk.Chunk[,] _currentLoadedChunks;
 
@@ -47,14 +47,11 @@ namespace Map
                 currentPosition = new Vector3(0, 0, currentPosition.z);
                 currentPosition -= new Vector3(0, 0, _currentMapData.ChunkBoundLength);
             }
-
         }
 
         public async Task<Chunk.Chunk> CreateChunk(Vector2Int matrixCoord)
         {
-            if (matrixCoord.x < 0 || matrixCoord.y < 0 ||
-                matrixCoord.x >= _currentMapData.chunks.Y[0].X.Count ||
-                matrixCoord.y >= _currentMapData.chunks.Y.Count)
+            if (!ValidateCoordinate(matrixCoord))
                 return null;
 
             if (_currentLoadedChunks[matrixCoord.y, matrixCoord.x] != null)
@@ -102,11 +99,53 @@ namespace Map
 
             return closestChunkMatrixCoord;
         }
+
         public float ChunkLength => _currentMapData.ChunkBoundLength;
-        public Vector3 GetChunkInitPosition(Vector2Int matrixCoord) =>
+
+        public Vector3 GetChunkInitPosition(Vector2Int matrixCoord) => 
             _chunksInitPositions[matrixCoord.y, matrixCoord.x];
+
 
         public AssetReference GetChunkAsset(Vector2Int matrixCoord) =>
             _currentMapData.chunks.Y[matrixCoord.y].X[matrixCoord.x];
+
+        public (Chunk.Chunk, Vector2Int) GetChunkAround(Vector2Int centerCoordinate, Vector3 trackedPosition)
+        {
+            Chunk.Chunk currentClosest = _currentLoadedChunks[centerCoordinate.y, centerCoordinate.x];
+            
+            float minDistance = _currentMapData.ChunkBoundLength * 2;
+            Vector2Int newCenter = centerCoordinate;
+            for (int y = -1; y <= 1; ++y)
+            {
+                for (int x = -1; x <= 1; ++x)
+                {
+                    var currentCoordinate = centerCoordinate + new Vector2Int(x, y);
+
+                    if (!ValidateCoordinate(currentCoordinate))
+                        continue;
+
+                    var currentDistance =
+                        (trackedPosition - GetChunkInitPosition(currentCoordinate)).magnitude;
+
+                    if (currentDistance < minDistance &&
+                        _currentLoadedChunks[currentCoordinate.y, currentCoordinate.x] != null)
+                    {
+                        minDistance = currentDistance;
+                        currentClosest = _currentLoadedChunks[currentCoordinate.y, currentCoordinate.x];
+                        newCenter = currentCoordinate;
+                    }
+                }
+            }
+
+            return (currentClosest, newCenter);
+        }
+
+        private bool ValidateCoordinate(Vector2Int coord)
+        {
+            return coord.x >= 0 && 
+                   coord.y >= 0 && 
+                   coord.x < _currentMapData.chunks.Y[0].X.Count &&
+                   coord.y < _currentMapData.chunks.Y.Count;
+        }
     }
 }

@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d7726a45b114f55be7403327951a052, type: 3}
   m_Name: ChunkData
   m_EditorClassIdentifier: 
-  terrainPrefab: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+  terrainPrefab: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
