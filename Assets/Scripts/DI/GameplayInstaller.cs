@@ -3,7 +3,6 @@ using DefaultNamespace;
 using Map;
 using Movement.Input.Base;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Zenject;
 
 namespace DI

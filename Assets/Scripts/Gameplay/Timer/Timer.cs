@@ -12,12 +12,18 @@ namespace Timer
         
         private bool _paused = true;
 
+        private bool _looped = false;
+
         public Action EndTimer;
         public Action<float> TimeUpdated;
+        
+        public bool Looped => _looped;
         
         public void StartTimer() => _paused = false;
         
         public void StopTimer() => _paused = true;
+
+        public void SetLooped(bool i) => _looped = i;
 
         public void ResetCurrentTime() => _currentTime = 0f;
 
@@ -25,6 +31,13 @@ namespace Timer
         {
             _time = time >= 0f ? time : 0f;
             _currentTime = 0f;
+        }
+
+        public void AddTime(float time)
+        {
+            if (time < 0)
+                throw new ArgumentException("time must not be less than zero");
+            _time += time;
         } 
 
         public float CurrentTime => _currentTime;
@@ -43,8 +56,12 @@ namespace Timer
             if (_currentTime >= _time)
             {
                 TimeUpdated?.Invoke(0f);
-                StopTimer();
+                
+                if(!_looped)
+                    StopTimer();
+     
                 ResetCurrentTime();
+                
                 EndTimer?.Invoke();
             }
         }

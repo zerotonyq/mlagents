@@ -22,6 +22,7 @@ namespace Movement.Fsm.States
         public override void Exit()
         {
             Debug.Log("blocked state [EXIT]");
+            Fsm.SetState<FsmStateIdle>();
         }
 
         public override void Update()
