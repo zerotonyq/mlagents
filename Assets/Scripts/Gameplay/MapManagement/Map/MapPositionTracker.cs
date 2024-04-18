@@ -7,7 +7,7 @@ using Zenject;
 
 namespace Map
 {
-    public class ChunkTracker : ITickable 
+    public class MapPositionTracker : ITickable 
     {
         private float _offsetToLoad;
      

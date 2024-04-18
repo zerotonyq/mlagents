@@ -19,7 +19,13 @@ namespace DI
             Container.Bind<IMovementInputManager>().To<PlayerMovementInputManager>().AsSingle();
             Container.Bind<GameplayEntryPoint>().AsSingle().NonLazy();
             Container.Bind<ChunkLoader>().AsSingle().NonLazy();
-            Container.Bind<ITickable>().To<ChunkTracker>().AsSingle().NonLazy();
+            
+            Container.Bind<Timer.Timer>().AsTransient().OnInstantiated((context, o) =>
+            {
+                context.Container.Resolve<TickableManager>().Add(o as ITickable);
+            } );
+            
+            Container.Bind<ITickable>().To<MapPositionTracker>().AsSingle().NonLazy();
         }
     }
 }

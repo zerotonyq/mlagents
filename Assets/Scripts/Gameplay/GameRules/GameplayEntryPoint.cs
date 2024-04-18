@@ -16,28 +16,35 @@ namespace DefaultNamespace
     public class GameplayEntryPoint
     {
         public Action GameEnded;
-
-
+        
         private IMovementInputManager _playerInputManager;
+        
 
         private List<FsmMovementView> _charactersMovement = new();
 
         public Action<Transform> PlayerCreated;
 
         [Inject]
-        public void Initialize(GameplayAssetPreloader gameplayAssetPreloader, IMovementInputManager inputManager, CinemachineVirtualCamera cinemachineVirtualCamera)
+        public void Initialize(GameplayAssetPreloader gameplayAssetPreloader,
+            IMovementInputManager inputManager,
+            CinemachineVirtualCamera cinemachineVirtualCamera,
+            Timer.Timer timer)
         {
             _playerInputManager = inputManager;
+            
             PlayerCreated += transform =>
             {
                 cinemachineVirtualCamera.Follow = transform;
                 cinemachineVirtualCamera.GetCinemachineComponent<CinemachineTransposer>().m_FollowOffset =
                     new Vector3(0, 30, -15);
             };
+            
             gameplayAssetPreloader.StartPreloadingAsset(AssetName.Player.ToString(), PlayerAssetDownloaded);
+
+            StartGame();
         }
 
-        public void StartGame(float time)
+        public void StartGame()
         {
             GameEnded += BlockAllCharacters;
         }
