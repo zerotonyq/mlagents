@@ -486,6 +486,7 @@ GameObject:
   - component: {fileID: 2067760665}
   - component: {fileID: 2067760664}
   - component: {fileID: 2067760663}
+  - component: {fileID: 2067760667}
   m_Layer: 0
   m_Name: TerrainGenerator
   m_TagString: Untagged
@@ -506,10 +507,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mesh: {fileID: 641456085}
-  xSize: 0
-  zSize: 0
-  verticies: []
-  triangles: 
+  xSize: 50
+  zSize: 50
+  xFrequency1: 0.01
+  zFrequency1: 0.01
+  amplitude1: 50
+  xFrequency2: 0.1
+  zFrequency2: 0.1
+  amplitude2: 25
+  noiseStrength: 1
+  xOffset1: 100
+  zOffset1: 100
+  xOffset2: 0
+  zOffset2: 0
 --- !u!23 &2067760664
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -530,7 +540,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: aa966d1feb22b9e438a1df95b4a49c95, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -575,6 +585,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2067760667
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2067760662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ed6de08ee46f4f4caa3ec30717516cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  coordStart: {x: 0, y: 0}
+  coordTarget: {x: 0, y: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
