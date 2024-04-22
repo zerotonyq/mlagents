@@ -1,6 +1,4 @@
-﻿
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -21,27 +19,30 @@ namespace TerrainGeneration
             while (toSearch.Any())
             {
                 var currentNode = toSearch[0];
-                for(int i = 0; i < toSearch.Count; ++i)
+                for (int i = 0; i < toSearch.Count; ++i)
                     if (toSearch[i].F < currentNode.F ||
-                        Math.Abs(currentNode.F - toSearch[i].F) < 0.01f && 
+                        Math.Abs(currentNode.F - toSearch[i].F) < 0.01f &&
                         toSearch[i].F < currentNode.F)
                         currentNode = toSearch[i];
-                
+
                 processed.Add(currentNode);
                 toSearch.Remove(currentNode);
-                
+
                 currentNode.SetColor(ClosedColor);
-                
-                if (currentNode == targetNode) {
+
+                if (currentNode == targetNode)
+                {
                     var currentPathTile = targetNode;
                     var path = new List<Node>();
                     var count = 100;
-                    while (currentPathTile != startNode) {
+                    while (currentPathTile != startNode)
+                    {
                         path.Add(currentPathTile);
                         currentPathTile = currentPathTile.Connection;
                         count--;
                         if (count < 0) throw new Exception();
                     }
+
                     path.Add(currentPathTile);
                     foreach (var tile in path) tile.SetColor(PathColor);
                     startNode.SetColor(PathColor);
@@ -50,17 +51,22 @@ namespace TerrainGeneration
                     return path;
                 }
                 
-                foreach (var neighbor in currentNode.Neighbors.Where(t => !processed.Contains(t))) {
-                    
+                foreach (var neighbor in currentNode.Neighbors.Where(t => !processed.Contains(t)))
+                {
+                    if(neighbor.Deactivated)
+                        continue;
                     var inSearch = toSearch.Contains(neighbor);
 
                     var costToNeighbor = currentNode.G + currentNode.GetDistance(neighbor);
-
-                    if (!inSearch || costToNeighbor < neighbor.G) {
+                    
+                    if (!inSearch || costToNeighbor < neighbor.G)
+                    {
+                        
                         neighbor.SetG(costToNeighbor);
                         neighbor.SetConnection(currentNode);
 
-                        if (!inSearch) {
+                        if (!inSearch)
+                        {
                             neighbor.SetH(neighbor.GetDistance(targetNode));
                             toSearch.Add(neighbor);
                             neighbor.SetColor(OpenColor);
@@ -79,6 +85,7 @@ namespace TerrainGeneration
             for (int i = 0; i < path.Count; i++)
             {
                 lr.SetPosition(i, path[i].Position);
+                Debug.Log(path[i].Position);
             }
         }
     }

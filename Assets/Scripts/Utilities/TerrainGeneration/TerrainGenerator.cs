@@ -7,11 +7,13 @@ using UnityEngine.Serialization;
 
 namespace TerrainGeneration
 {
-    [ExecuteInEditMode]
     [RequireComponent(typeof(MeshFilter))]
     public class TerrainGenerator : MonoBehaviour
     {
         [SerializeField] private Mesh mesh;
+
+        public Mesh Mesh => mesh;
+
         [SerializeField] private int xSize;
         [SerializeField] private int zSize;
 
@@ -30,7 +32,14 @@ namespace TerrainGeneration
         {
             mesh = new Mesh();
             GetComponent<MeshFilter>().mesh = mesh;
+            
         }
+
+        private void Start()
+        {
+            GenerateMesh();
+        }
+
 
         [ContextMenu("GenerateMapMesh")]
         private void GenerateMesh()

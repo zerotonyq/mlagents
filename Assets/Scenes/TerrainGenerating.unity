@@ -382,6 +382,37 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!1 &804210236
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 804210237}
+  m_Layer: 0
+  m_Name: posTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &804210237
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 804210236}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 100, y: 31, z: 100}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1040396069
 GameObject:
   m_ObjectHideFlags: 0
@@ -474,6 +505,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1083718999
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1083719000}
+  m_Layer: 0
+  m_Name: posStart
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1083719000
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1083718999}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 30, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2067760662
 GameObject:
   m_ObjectHideFlags: 0
@@ -507,14 +569,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mesh: {fileID: 641456085}
-  xSize: 50
-  zSize: 50
+  xSize: 100
+  zSize: 100
   xFrequency1: 0.01
   zFrequency1: 0.01
   amplitude1: 50
   xFrequency2: 0.1
   zFrequency2: 0.1
-  amplitude2: 25
+  amplitude2: 15
   noiseStrength: 1
   xOffset1: 100
   zOffset1: 100
@@ -597,8 +659,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ed6de08ee46f4f4caa3ec30717516cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  coordStart: {x: 0, y: 0}
-  coordTarget: {x: 0, y: 0}
+  minDischargeAngle: 60
+  maxDeltaX: 5
+  maxDeltaY: 5
+  posStart: {fileID: 1083719000}
+  posTarget: {fileID: 804210237}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -606,3 +671,5 @@ SceneRoots:
   - {fileID: 1040396072}
   - {fileID: 392305263}
   - {fileID: 2067760666}
+  - {fileID: 1083719000}
+  - {fileID: 804210237}
