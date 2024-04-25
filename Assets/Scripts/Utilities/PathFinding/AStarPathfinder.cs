@@ -28,8 +28,6 @@ namespace TerrainGeneration
                 processed.Add(currentNode);
                 toSearch.Remove(currentNode);
 
-                currentNode.SetColor(ClosedColor);
-
                 if (currentNode == targetNode)
                 {
                     var currentPathTile = targetNode;
@@ -44,10 +42,11 @@ namespace TerrainGeneration
                     }
 
                     path.Add(currentPathTile);
-                    foreach (var tile in path) tile.SetColor(PathColor);
-                    startNode.SetColor(PathColor);
-                    PrintPath(path);
+
+#if UNITY_EDITOR
                     Debug.Log(path.Count);
+#endif
+                
                     return path;
                 }
                 
@@ -69,24 +68,12 @@ namespace TerrainGeneration
                         {
                             neighbor.SetH(neighbor.GetDistance(targetNode));
                             toSearch.Add(neighbor);
-                            neighbor.SetColor(OpenColor);
                         }
                     }
                 }
             }
-
+Debug.Log("end pathfinding");
             return null;
-        }
-
-        private static void PrintPath(List<Node> path)
-        {
-            var lr = new GameObject().AddComponent<LineRenderer>();
-            lr.positionCount = path.Count;
-            for (int i = 0; i < path.Count; i++)
-            {
-                lr.SetPosition(i, path[i].Position);
-                Debug.Log(path[i].Position);
-            }
         }
     }
 }

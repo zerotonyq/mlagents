@@ -407,7 +407,7 @@ Transform:
   m_GameObject: {fileID: 804210236}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 100, y: 31, z: 100}
+  m_LocalPosition: {x: 50, y: 31, z: 50}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -568,20 +568,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef340900b8e747a79d86ee5c66a81e85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mesh: {fileID: 641456085}
-  xSize: 100
-  zSize: 100
-  xFrequency1: 0.01
-  zFrequency1: 0.01
-  amplitude1: 50
-  xFrequency2: 0.1
-  zFrequency2: 0.1
-  amplitude2: 15
+  terrainSizeX: 20
+  terrainSizeY: 20
+  chunkSize: 3
+  noiseFrequencyX1: 0.1
+  noiseFrequencyZ1: 0.1
+  noiseAmplitude1: 3
+  noiseOffsetX1: 0
+  noiseOffsetY1: 0
+  noiseFrequencyX2: 0
+  noiseFrequencyZ2: 0
+  noiAmplitude2: 0
+  noiseOffsetX2: 0
+  noiseOffsetY2: 0
   noiseStrength: 1
-  xOffset1: 100
-  zOffset1: 100
-  xOffset2: 0
-  zOffset2: 0
 --- !u!23 &2067760664
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -659,9 +659,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ed6de08ee46f4f4caa3ec30717516cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minDischargeAngle: 60
-  maxDeltaX: 5
-  maxDeltaY: 5
+  minDischargeAngle: 30
+  maxGraphChunkLengthX: 20
+  maxGraphChunkLengthY: 20
+  maxAngleToAssignNeighbor: 45
   posStart: {fileID: 1083719000}
   posTarget: {fileID: 804210237}
 --- !u!1660057539 &9223372036854775807

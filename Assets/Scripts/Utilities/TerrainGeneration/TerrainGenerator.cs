@@ -1,108 +1,87 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using Autodesk.Fbx;
+using TerrainGeneration.Converter;
+using Unity.VisualScripting;
 using UnityEditor.Formats.Fbx.Exporter;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Utilities.SaveLoad;
+using TerrainData = TerrainGeneration.SerializationData.TerrainData;
 
 namespace TerrainGeneration
 {
     [RequireComponent(typeof(MeshFilter))]
     public class TerrainGenerator : MonoBehaviour
     {
-        [SerializeField] private Mesh mesh;
+        private Mesh mesh;
 
-        public Mesh Mesh => mesh;
+        [SerializeField] private int terrainSizeX;
+        [SerializeField] private int terrainSizeY;
+        [SerializeField] private int chunkSize;
+        [Space(10f)]
+        [SerializeField] private float noiseFrequencyX1;
+        [SerializeField] private float noiseFrequencyZ1;
+        [SerializeField] private float noiseAmplitude1;
+        [SerializeField] private float noiseOffsetX1;
+        [SerializeField] private float noiseOffsetY1;
+        [Space(5f)]
+        [SerializeField] private float noiseFrequencyX2;
+        [SerializeField] private float noiseFrequencyZ2;
+        [SerializeField] private float noiAmplitude2;
+        [SerializeField] private float noiseOffsetX2;
+        [SerializeField] private float noiseOffsetY2;
+        [Space(5f)]
+        [SerializeField] private float noiseStrength;
+        
+        
+        
 
-        [SerializeField] private int xSize;
-        [SerializeField] private int zSize;
-
-        public int XSize => xSize;
-
-        public int ZSize => zSize;
-
-        private Vector3[] _verticies;
-
-        public Vector3[] Verticies => _verticies;
+        private Vector3[] _vertices;
 
         private int[] _triangles;
 
-        [ContextMenu("InitMesh")]
+        public Action<Vector3[], int, int> TerrainGenerated;
+
+        public Mesh Mesh => mesh;
+
+        private void Start()
+        {
+            InitMesh();
+            GenerateMesh();
+        }
+
         private void InitMesh()
         {
             mesh = new Mesh();
             GetComponent<MeshFilter>().mesh = mesh;
-            
         }
 
-        private void Start()
-        {
-            GenerateMesh();
-        }
+        [ContextMenu("GenerateTerrainMesh")]
+        private void GenerateMesh() => StartCoroutine(GenerateMeshCoroutine());
 
-
-        [ContextMenu("GenerateMapMesh")]
-        private void GenerateMesh()
-        {
-            StartCoroutine(GenerateMeshCoroutine());
-            
-        }
-
-        [SerializeField] private float xFrequency1;
-        [SerializeField] private float zFrequency1;
-        [SerializeField] private float amplitude1;
-        [SerializeField] private float xFrequency2;
-        [SerializeField] private float zFrequency2;
-        [SerializeField] private float amplitude2;
-        [SerializeField] private float noiseStrength;
-        [SerializeField] private float xOffset1;
-        [SerializeField] private float zOffset1;
-        [SerializeField] private float xOffset2;
-        [SerializeField] private float zOffset2;
-
-        public Action<Vector3[], int, int> TerrainGenerated;
         private IEnumerator GenerateMeshCoroutine()
         {
-            _verticies = new Vector3[(xSize + 1) * (zSize + 1)];
+            _vertices = new Vector3[(terrainSizeX + 1) * (terrainSizeY + 1)];
 
-
-            for (int i = 0, z = 0; z <= zSize; z++)
+            for (int i = 0, z = 0; z <= terrainSizeY; z++)
             {
-                for (int x = 0; x <= xSize; x++)
+                for (int x = 0; x <= terrainSizeX; x++)
                 {
-                    float y = (Mathf.PerlinNoise(x * xFrequency1 + xOffset1, z * zFrequency1 + zOffset1) * amplitude1 + 
-                              Mathf.PerlinNoise(x * xFrequency2 + xOffset2, z * zFrequency2 + zOffset2) * amplitude2) * noiseStrength;
-                    _verticies[i] = new Vector3(x, y, z);
+                    float y = (Mathf.PerlinNoise(x * noiseFrequencyX1 + noiseOffsetX1,
+                                   z * noiseFrequencyZ1 + noiseOffsetY1) * noiseAmplitude1 +
+                               Mathf.PerlinNoise(x * noiseFrequencyX2 + noiseOffsetX2,
+                                   z * noiseFrequencyZ2 + noiseOffsetY2) * noiAmplitude2) * noiseStrength;
+                    _vertices[i] = new Vector3(x, y, z);
                     ++i;
                 }
             }
 
-            _triangles = new int[xSize * zSize * 6];
+            _triangles = TerrainConverter.CreateTriangles(terrainSizeX);
 
-            int vert = 0;
-            int tris = 0;
-
-            for (int z = 0; z < zSize; z++)
-            {
-                for (int x = 0; x < xSize; x++)
-                {
-                    _triangles[tris + 0] = vert + 0;
-                    _triangles[tris + 1] = vert + xSize + 1;
-                    _triangles[tris + 2] = vert + 1;
-                    _triangles[tris + 3] = vert + 1;
-                    _triangles[tris + 4] = vert + xSize + 1;
-                    _triangles[tris + 5] = vert + xSize + 2;
-
-                    vert++;
-                    tris += 6;
-
-                    yield return null;
-                }
-
-                vert++;
-            }
-
-            TerrainGenerated?.Invoke(_verticies, xSize + 1, zSize + 1);
+            TerrainGenerated?.Invoke(_vertices, terrainSizeX + 1, terrainSizeY + 1);
+            yield break;
         }
 
         private void Update()
@@ -114,13 +93,50 @@ namespace TerrainGeneration
         {
             mesh.Clear();
 
-            mesh.vertices = _verticies;
+            mesh.vertices = _vertices;
             mesh.triangles = _triangles;
 
             mesh.RecalculateNormals();
         }
-        
-        
-        
+
+        [ContextMenu("SaveTerrainData")]
+        private void SaveTerrainData()
+        {
+            var data = TerrainConverter.ConvertToSerializationFormat(mesh, chunkSize, terrainSizeX);
+            Debug.Log("TerrainDataSaved");
+            BinarySaveLoadUtility.Save(data, Application.dataPath + "graphData");
+        }
+
+        [ContextMenu("LoadTerrainData")]
+        private void LoadTerrainData()
+        {
+            var data = TerrainConverter.ConvertToEngineFormat(
+                BinarySaveLoadUtility.Load<TerrainData>(Application.dataPath + "graphData"));
+            ConstructChunks(data);
+        }
+
+        private List<Vector3> l;
+        private void ConstructChunks(Dictionary<Vector3, Mesh> chunksData)
+        {
+            l = new List<Vector3>();
+            foreach (var chunksDataKey in chunksData.Keys)
+            {
+                l.Add(chunksDataKey);
+                var obj = new GameObject(chunksDataKey.ToString());
+                obj.AddComponent<MeshFilter>().mesh = chunksData[chunksDataKey];
+                obj.AddComponent<MeshRenderer>();
+            }
+        }
+
+        private void OnDrawGizmos()
+        {
+            if (l == null)
+                return;
+            foreach (var VARIABLE in l)
+            {
+                Gizmos.DrawSphere(VARIABLE, 0.1f);    
+            }
+            
+        }
     }
 }
