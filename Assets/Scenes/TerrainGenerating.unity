@@ -568,9 +568,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef340900b8e747a79d86ee5c66a81e85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  terrainSizeX: 20
-  terrainSizeY: 20
-  chunkSize: 3
+  terrainSizeX: 15
+  terrainSizeY: 15
+  chunkSize: 5
   noiseFrequencyX1: 0.1
   noiseFrequencyZ1: 0.1
   noiseAmplitude1: 3

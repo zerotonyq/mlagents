@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using JetBrains.Annotations;
 using TerrainGeneration.SerializationData;
 using Unity.Collections;
@@ -63,40 +64,54 @@ namespace TerrainGeneration.Converter
 
             return terrainData;
         }*/
-        
+
         public static TerrainData ConvertToSerializationFormat(Mesh mesh, int chunkLength, int meshLength)
         {
-            NativeArray<NativeArray<float3>> terrainMatrix = ConvertTo2DimVertices(meshLength + 1, mesh.vertices);
 
+            if ((meshLength * meshLength) % (chunkLength * chunkLength) != 0 || meshLength % chunkLength != 0)
+                throw new ArgumentException("mesh area must divisible without remainder");
             TerrainData terrainData = new TerrainData();
-
-            int countOneDim = meshLength / chunkLength;
-
-            for (int y = 0; y < countOneDim; y++)
+            float3 startPosition = mesh.vertices[0];
+            int count = meshLength * meshLength / (chunkLength * chunkLength);
+            var clMultY = 0;
+            var clMultX = 0;
+            for (int i = 0; i < count; i++)
             {
-                for (int x = 0; x < countOneDim; x++)
+                float3[] currentChunkArray =
+                    new float3[(chunkLength + 1) * (chunkLength + 1)];
+                
+                
+
+                for (int j = 0, y = 0; y <= (meshLength + 1) * chunkLength; y += meshLength + 1)
                 {
-                    var StartPositionArr = new NativeArray<int2>(1, Allocator.TempJob);
-                    StartPositionArr[0] = new int2(x, y) * chunkLength;
-                    var dimArr = new NativeArray<int>(1, Allocator.TempJob);
-                    dimArr[0] = chunkLength;
-                    var createVerticesJob = new CreateVerticiesJob()
+                    var currentY = y + (meshLength + 1) * chunkLength * clMultY;
+                    for (int x = currentY + clMultX * chunkLength; x <= currentY + (clMultX + 1) * chunkLength; x++)
                     {
-                        EnterArray = terrainMatrix, 
-                        StartPositionArray =StartPositionArr,
-                        DimArray = dimArr
-                    };
-                    var handle = createVerticesJob.Schedule();
-                    handle.Complete();
-                    //float3[] vertices = CreateVertices(terrainMatrix, new int2(x, y) * chunkLength, chunkLength);
-                    int[] triangles = CreateTriangles(chunkLength);
-
-                    // get half of chunk length to obtain center
-                    float3 chunkCenterPosition =
-                        new float3(y, 0, x) * chunkLength + new float3(1, 0, 1) * chunkLength / 2f;
-
-                    terrainData.AddChunk(new ChunkSerializableData(chunkCenterPosition, createVerticesJob.ExitArray, triangles));
+                        currentChunkArray[j] = new float3(mesh.vertices[x].x, mesh.vertices[x].y, mesh.vertices[x].z);
+                        ++j;
+                    }
                 }
+                
+                var currentVector =currentChunkArray[^1] - currentChunkArray[0];
+                float3 chunkCenterPosition = currentChunkArray[0] + new float3(currentVector.x / 2, 0, currentVector.z / 2);
+                var data = new ChunkSerializableData(chunkCenterPosition, currentChunkArray, CreateTriangles(chunkLength));
+                terrainData.AddChunk(data);
+                //currentChunkArray.Dispose();
+                
+                if((i+1) % (meshLength/chunkLength) == 0)
+                    clMultX=0;
+                else
+                    clMultX++;
+                
+                if ((i + 1) % (meshLength / chunkLength) == 0)
+                    clMultY++;
+            }
+
+
+
+            foreach (var chunkSerializableData in terrainData.Chunks)
+            {
+                Debug.Log(chunkSerializableData.Position);
             }
 
             return terrainData;
@@ -124,6 +139,7 @@ namespace TerrainGeneration.Converter
             {
                 terrainMatrix[i] = new NativeArray<float3>(terrainDim, Allocator.TempJob);
             }
+
             for (int i = 0, y = 0; y < terrainDim; ++y)
             {
                 for (int x = 0; x < terrainDim; x++)
@@ -136,6 +152,7 @@ namespace TerrainGeneration.Converter
 
             return terrainMatrix;
         }
+
         private static float3[] CreateVertices(float3[,] matrix, int2 startPosition, int dim)
         {
             float3[] vertices = new float3[(dim + 1) * (dim + 1)];
@@ -152,23 +169,23 @@ namespace TerrainGeneration.Converter
             return vertices;
         }
 
-        public static int[] CreateTriangles(int terrainSize)
+        public static int[] CreateTriangles(int chunkSize)
         {
-            int[] triangles = new int[terrainSize * terrainSize * 6];
+            int[] triangles = new int[chunkSize * chunkSize * 6];
 
             int vert = 0;
             int tris = 0;
 
-            for (int z = 0; z < terrainSize; z++)
+            for (int z = 0; z < chunkSize; z++)
             {
-                for (int x = 0; x < terrainSize; x++)
+                for (int x = 0; x < chunkSize; x++)
                 {
                     triangles[tris + 0] = vert + 0;
-                    triangles[tris + 1] = vert + terrainSize + 1;
+                    triangles[tris + 1] = vert + chunkSize + 1;
                     triangles[tris + 2] = vert + 1;
                     triangles[tris + 3] = vert + 1;
-                    triangles[tris + 4] = vert + terrainSize + 1;
-                    triangles[tris + 5] = vert + terrainSize + 2;
+                    triangles[tris + 4] = vert + chunkSize + 1;
+                    triangles[tris + 5] = vert + chunkSize + 2;
 
                     vert++;
                     tris += 6;
@@ -187,22 +204,15 @@ namespace TerrainGeneration.Converter
         public NativeArray<float3> ExitArray;
         public NativeArray<int2> StartPositionArray;
         public NativeArray<int> DimArray;
+
         public void Execute()
         {
             CreateVertices(EnterArray, StartPositionArray[0], DimArray[0]);
         }
+
         private void CreateVertices(NativeArray<NativeArray<float3>> matrix, int2 startPosition, int dim)
         {
             ExitArray = new NativeArray<float3>((dim + 1) * (dim + 1), Allocator.TempJob);
-
-            for (int i = 0, y = startPosition.y; y <= startPosition.y + dim; y++)
-            {
-                for (int x = startPosition.x; x <= startPosition.x + dim; x++)
-                {
-                    ExitArray[i] = matrix[y][x];
-                    ++i;
-                }
-            }
         }
     }
 }
