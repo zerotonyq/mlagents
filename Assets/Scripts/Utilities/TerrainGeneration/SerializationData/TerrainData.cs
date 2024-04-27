@@ -11,6 +11,9 @@ namespace TerrainGeneration.SerializationData
 
         public List<ChunkSerializableData> Chunks => _chunks;
 
-        public void AddChunk(ChunkSerializableData data) => _chunks.Add(data);
+        public void AddChunk(ChunkSerializableData data)
+        {
+            _chunks.Add(data);   
+        }
     }
 }

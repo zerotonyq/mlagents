@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Autodesk.Fbx;
 using TerrainGeneration.Converter;
 using Unity.VisualScripting;
@@ -8,6 +9,7 @@ using UnityEditor.Formats.Fbx.Exporter;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Utilities.SaveLoad;
+using Debug = UnityEngine.Debug;
 using TerrainData = TerrainGeneration.SerializationData.TerrainData;
 
 namespace TerrainGeneration
@@ -76,12 +78,13 @@ namespace TerrainGeneration
                     _vertices[i] = new Vector3(x, y, z);
                     ++i;
                 }
+
+                yield return new WaitForSeconds(0.05f);
             }
 
             _triangles = TerrainConverter.CreateTriangles(terrainSizeX);
 
             TerrainGenerated?.Invoke(_vertices, terrainSizeX + 1, terrainSizeY + 1);
-            yield break;
         }
 
         private void Update()
@@ -100,19 +103,18 @@ namespace TerrainGeneration
         }
 
         [ContextMenu("SaveTerrainData")]
-        private void SaveTerrainData()
+        private async void SaveTerrainData()
         {
-            var data = TerrainConverter.ConvertToSerializationFormat(mesh, chunkSize, terrainSizeX);
+            var data = await TerrainConverter.ConvertToSerializationFormat(mesh, chunkSize, terrainSizeX);
             Debug.Log("TerrainDataSaved");
             BinarySaveLoadUtility.Save(data, Application.dataPath + "graphData");
         }
 
         [ContextMenu("LoadTerrainData")]
-        private void LoadTerrainData()
+        public static void LoadTerrainData()
         {
             var data = TerrainConverter.ConvertToEngineFormat(
                 BinarySaveLoadUtility.Load<TerrainData>(Application.dataPath + "graphData"));
-            ConstructChunks(data);
         }
 
         private List<Vector3> l;

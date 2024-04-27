@@ -25,7 +25,7 @@ namespace TerrainGeneration.SerializationData
             _vertices = vertices;
             _triangles = triangles;
         }
-        //private NativeArray<float3> _vertices;
+        
         public float3 Position => _position;
 
         public float3[] Vertices => _vertices;
