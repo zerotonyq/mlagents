@@ -5,7 +5,7 @@ using Unity.Mathematics;
 namespace TerrainGeneration.SerializationData
 {
     [Serializable]
-    public class TerrainData : Utilities.SaveLoad.Data
+    public class TerrainSerializableData : Utilities.SaveLoad.Data
     {
         private List<ChunkSerializableData> _chunks = new();
 

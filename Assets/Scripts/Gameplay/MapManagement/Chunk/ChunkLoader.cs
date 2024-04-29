@@ -1,184 +1,163 @@
 ﻿using System;
-using System.Threading.Tasks;
-using JetBrains.Annotations;
-using Map.Data;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using ResourceManagement;
 using ResourceManagement.Data;
+using TerrainGeneration;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using Zenject;
+using TerrainData = TerrainGeneration.Data.TerrainData;
 using Vector3 = UnityEngine.Vector3;
 
 namespace Map
 {
     public class ChunkLoader
     {
-        private MapData _currentMapData;
+        public float OffsetToLoadNewChunk => _offsetToLoadNewChunk;
+
+
+        private float _offsetToLoadNewChunk;
 
         private Vector3[,] _chunksInitPositions;
-        
+
         private Chunk.Chunk[,] _currentLoadedChunks;
 
-        public Action<MapData> MapDataLoaded;
+        public TerrainData TerrainData = new();
+
+        //first - position on the plane, second - posititon in world space 
+        public Dictionary<Vector3, Vector3> ChunkPlanePositions = new();
+
+        public Dictionary<Vector3, Chunk.Chunk> InstantiatedChunks = new();
+
+        private GameplayAssetPreloader _gap;
+        private Material _chunkMaterial;
 
         [Inject]
-        public void Initialize(GameplayAssetPreloader gap)
+        public async void Initialize(GameplayAssetPreloader gap)
         {
-            gap.StartPreloadingAsset(AssetName.MapData.ToString(), (ScriptableObject so) =>
+            _gap = gap;
+            _gap.StartPreloadingAsset(AssetName.TerrainMaterial.ToString(), AssignChunkMaterial);
+            TerrainData = await TerrainGenerator.LoadTerrainDataStatic();
+
+            _offsetToLoadNewChunk = TerrainData.ChunkLength / 4;
+
+            foreach (var key in TerrainData.ChunkMeshes.Keys)
             {
-                _currentMapData = so as MapData;
-                MapDataLoaded?.Invoke(_currentMapData);
-                InitChunkPositions();
-            });
-        }
-
-
-        private void InitChunkPositions()
-        {
-            _chunksInitPositions = new Vector3[_currentMapData.chunks.Y[0].X.Count, _currentMapData.chunks.Y.Count];
-            _currentLoadedChunks = new Chunk.Chunk[_currentMapData.chunks.Y[0].X.Count, _currentMapData.chunks.Y.Count];
-
-            Vector3 currentPosition =
-                new Vector3(0, 0, (_currentMapData.chunks.Y.Count - 1) * _currentMapData.ChunkBoundLength);
-
-            for (int y = 0; y < _currentMapData.chunks.Y.Count; ++y)
-            {
-                for (int x = 0; x < _currentMapData.chunks.Y[y].X.Count; ++x)
-                {
-                    Debug.Log(currentPosition);
-                    _chunksInitPositions[y, x] = currentPosition;
-                    currentPosition += new Vector3(_currentMapData.ChunkBoundLength, 0, 0);
-                }
-
-                currentPosition = new Vector3(0, 0, currentPosition.z);
-                currentPosition -= new Vector3(0, 0, _currentMapData.ChunkBoundLength);
-            }
-            
-        }
-
-        public async Task<Chunk.Chunk> CreateChunk(Vector2Int matrixCoord)
-        {
-            if (!ValidateCoordinate(matrixCoord))
-                return null;
-
-            if (_currentLoadedChunks[matrixCoord.y, matrixCoord.x] != null)
-            {
-                _currentLoadedChunks[matrixCoord.y, matrixCoord.x].Enable();
-                return _currentLoadedChunks[matrixCoord.y, matrixCoord.x];
-            }
-                
-
-            var chunk = await Chunk.Chunk.ConstructFromPrefab(GetChunkAsset(matrixCoord),
-                GetChunkInitPosition(matrixCoord));
-
-            _currentLoadedChunks[matrixCoord.y, matrixCoord.x] = chunk;
-
-            return chunk;
-        }
-
-        public async void CreateChunks(bool[,] field, Vector2Int center)
-        {
-            for (int y = 0; y < field.GetLength(0); ++y)
-            {
-                for (int x = 0; x < field.GetLength(1); ++x)
-                {
-                    if (field[y, x])
-                    {
-                        await CreateChunk(center + new Vector2Int(x - 1, y - 1));
-                    }
-                }
+                ChunkPlanePositions.Add(new Vector3(key.x, 0, key.z), key);
             }
         }
 
-        //O(n)
-        public Vector2Int GetClosestChunkMatrixCoord(Vector3 targetPosition)
+        private void AssignChunkMaterial(Material m) => _chunkMaterial = m;
+
+        public Vector3 GetClosestChunkCenterPosition(Vector3 targetPosition, Vector3 previousChunkCenterPosition, int searchRadiusFactor)
         {
-            Vector3 currentChunkPosition = _chunksInitPositions[0, 0];
-            Vector2Int closestChunkMatrixCoord = Vector2Int.zero;
-            for (int y = 0; y < _chunksInitPositions.GetLength(0); ++y)
+            float minDistance = 1000000f;
+            Vector3 resultChunkCenterPos = Vector3.zero;
+
+            for (int y = -searchRadiusFactor; y <= searchRadiusFactor; y++)
             {
-                for (int x = 0; x < _chunksInitPositions.GetLength(1); ++x)
+                for (int x = -searchRadiusFactor; x <= searchRadiusFactor; x++)
                 {
-                    var trackedLast = targetPosition - currentChunkPosition;
-                    var trackedCurrent = targetPosition - _chunksInitPositions[y, x];
-                    if (trackedCurrent.magnitude < trackedLast.magnitude)
-                    {
-                        currentChunkPosition = _chunksInitPositions[y, x];
-                        closestChunkMatrixCoord = new Vector2Int(x, y);
-                    }
-                }
-            }
-            
-            return closestChunkMatrixCoord;
-        }
+                    var chunkCenterPos = new Vector3(previousChunkCenterPosition.x, 0, previousChunkCenterPosition.z) +
+                                         Vector3.right * x * TerrainData.ChunkLength +
+                                         Vector3.forward * y * TerrainData.ChunkLength;
 
-        //O(1)
-        public (Chunk.Chunk, Vector2Int) GetChunkAround(Vector2Int centerCoordinate, Vector3 trackedPosition)
-        {
-            Chunk.Chunk currentClosest = _currentLoadedChunks[centerCoordinate.y, centerCoordinate.x];
-
-            float minDistance = _currentMapData.ChunkBoundLength * 2;
-            Vector2Int newCenter = centerCoordinate;
-            for (int y = -1; y <= 1; ++y)
-            {
-                for (int x = -1; x <= 1; ++x)
-                {
-                    var currentCoordinate = centerCoordinate + new Vector2Int(x, y);
-
-                    if (!ValidateCoordinate(currentCoordinate))
+                    if (!ChunkPlanePositions.ContainsKey(chunkCenterPos))
                         continue;
 
-                    var currentDistance =
-                        (trackedPosition - GetChunkInitPosition(currentCoordinate)).magnitude;
-
-                    if (currentDistance < minDistance &&
-                        _currentLoadedChunks[currentCoordinate.y, currentCoordinate.x] != null)
+                    if ((chunkCenterPos - targetPosition).magnitude < minDistance)
                     {
-                        minDistance = currentDistance;
-                        currentClosest = _currentLoadedChunks[currentCoordinate.y, currentCoordinate.x];
-                        newCenter = currentCoordinate;
+                        minDistance = (chunkCenterPos - targetPosition).magnitude;
+                        resultChunkCenterPos = chunkCenterPos;
                     }
                 }
             }
 
-            return (currentClosest, newCenter);
+            if (!ChunkPlanePositions.ContainsKey(resultChunkCenterPos))
+                return ChunkPlanePositions[ChunkPlanePositions.Keys.First()];
+            return ChunkPlanePositions[resultChunkCenterPos];
         }
 
-        private bool ValidateCoordinate(Vector2Int coord)
+        public Vector3 GetClosestChunkCenterPosition(Vector3 targetPosition, int searchRadiusFactor)
         {
-            return coord.x >= 0 &&
-                   coord.y >= 0 &&
-                   coord.x < _currentMapData.chunks.Y[0].X.Count &&
-                   coord.y < _currentMapData.chunks.Y.Count;
+            
+            var xFactor =  (int)targetPosition.x/(int)TerrainData.ChunkLength;
+            var yFactor =  (int)targetPosition.y/(int)TerrainData.ChunkLength;
+            var zFactor =  (int)targetPosition.z/(int)TerrainData.ChunkLength;
+            
+            var clampedPosition = new Vector3(xFactor, yFactor, zFactor) * TerrainData.ChunkLength + new Vector3(1, 0, 1) * TerrainData.ChunkLength/2;
+
+
+            return GetClosestChunkCenterPosition(targetPosition, clampedPosition, searchRadiusFactor);
         }
 
-        public float ChunkLength => _currentMapData.ChunkBoundLength;
-
-        public Vector3 GetChunkInitPosition(Vector2Int matrixCoord) =>
-            _chunksInitPositions[matrixCoord.y, matrixCoord.x];
-
-
-        public AssetReference GetChunkAsset(Vector2Int matrixCoord) =>
-            _currentMapData.chunks.Y[matrixCoord.y].X[matrixCoord.x];
-        
-        public void HideChunks(Vector2Int centerCoord, int nonHideDistance)
+        public Queue<Vector3> FindChunkCenterPositionsAround(Vector3 chunkCenterPosition,
+            int distanceScale, bool onlyEdge = true)
         {
-            Debug.Log("HIDE " + centerCoord);
-            var hideDelta = nonHideDistance + 1;
-            for (int y = -1 * hideDelta; y <= hideDelta; ++y)
+            var positions = new Queue<Vector3>();
+            for (int y = -distanceScale; y <= distanceScale; y++)
             {
-                for (int x = -1 * hideDelta; x <= hideDelta; ++x)
+                for (int x = -distanceScale; x <= distanceScale; x++)
                 {
-                    if(Math.Abs(y) != hideDelta && Math.Abs(x) != hideDelta)
+                    if (x == 0 && y == 0)
                         continue;
                     
-                    var currentCoord = centerCoord + new Vector2Int(x, y);
-                    
-                    if(!ValidateCoordinate(currentCoord) || _currentLoadedChunks[currentCoord.y, currentCoord.x] == null)
+                    if(onlyEdge && (Mathf.Abs(x) != distanceScale && Mathf.Abs(y) != distanceScale))
                         continue;
-                        
-                    _currentLoadedChunks[currentCoord.y, currentCoord.x].Disable();
+                    
+                    var currentCenter = new Vector3(chunkCenterPosition.x, 0, chunkCenterPosition.z) +
+                                        Vector3.right * x * TerrainData.ChunkLength  +
+                                        Vector3.forward * y * TerrainData.ChunkLength;
+
+                    if (!ChunkPlanePositions.ContainsKey(currentCenter))
+                        continue;
+
+                    positions.Enqueue(ChunkPlanePositions[currentCenter]);
                 }
+            }
+
+            return positions;
+        }
+
+        public async void CreateChunk(Vector3 pos)
+        {
+            if (InstantiatedChunks.TryGetValue(pos, out Chunk.Chunk chunk))
+            {
+                chunk.Activate();
+                return;
+            }
+
+            if (!TerrainData.ChunkMeshes.TryGetValue(pos, out Mesh chunkMesh))
+            {
+                Debug.Log(
+                    "Cannot create chunk. There is no chunk in chunkDatas at this position " + pos);
+                return;
+            }
+
+            var newChunk = await Chunk.Chunk.Construct(chunkMesh,
+                pos - new Vector3(TerrainData.ChunkLength / 2f, 0, TerrainData.ChunkLength / 2f), _chunkMaterial);
+
+            InstantiatedChunks.Add(pos, newChunk);
+        }
+
+        public void CreateChunks(Queue<Vector3> positions)
+        {
+            while (positions.TryDequeue(out Vector3 position))
+                CreateChunk(position);
+        }
+
+        private void DeleteChunk(Vector3 position)
+        {
+            if (!InstantiatedChunks.TryGetValue(position, out Chunk.Chunk chunk)) return;
+            chunk.Deactivate();
+        }
+
+        public void DeleteChunks(Queue<Vector3> positions)
+        {
+            while (positions.TryDequeue(out Vector3 position))
+            {
+                DeleteChunk(position);
             }
         }
     }

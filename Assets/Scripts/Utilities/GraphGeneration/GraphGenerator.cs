@@ -52,6 +52,7 @@ public class GraphGenerator : MonoBehaviour
                 AssignNeighborsForNode(new Vector2Int(x, y));
             }
         }
+        Debug.Log("Graph constructed");
     }
 
     [ContextMenu("DischargeGraph")]
@@ -127,11 +128,12 @@ public class GraphGenerator : MonoBehaviour
     private void ConvertTo2DimentionalGraph()
     {
         _domains2Dim = new Node[_yDomainDimention, _xDomainDimention];
+        var mesh = _terrainGenerator.Mesh;
         for (int i = 0, y = 0; y < _yDomainDimention; y++)
         {
             for (int x = 0; x < _xDomainDimention; x++)
             {
-                var node = new Node(_domain[i], _terrainGenerator.Mesh.normals[i]);
+                var node = new Node(_domain[i], mesh.normals[i]);
                 _domains2Dim[y, x] = node;
                 ++i;
             }
@@ -250,8 +252,18 @@ public class GraphGenerator : MonoBehaviour
         return v.x >= 0 && v.y >= 0 && v.y < yDimSize && v.x < xDimSize;
     }
 
+    [ContextMenu("EnableGizmos")]
+    public void ToggleGizmo()
+    {
+        gizmo = !gizmo;
+    }
+
+    public bool gizmo = false;
     private void OnDrawGizmos()
     {
+        if(!gizmo)
+            return;
+        
         if (_domains2Dim == null)
             return;
 

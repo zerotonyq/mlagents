@@ -1,127 +1,68 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using DefaultNamespace;
-using Map.Data;
 using UnityEngine;
 using Zenject;
 
 namespace Map
 {
-    public class MapPositionTracker : ITickable 
+    public class MapPositionTracker : ITickable
     {
-        private float _offsetToLoad;
-     
-        private Transform _trackedTransform;
-        
-        private readonly bool[,] _trackedTransformAroundMatrix = new bool[3, 3];
-
-        private Chunk.Chunk _currentChunk;
-
-        private Vector2Int _currentCoord;
-        
         private ChunkLoader _chunkLoader;
-        
+
+        private Transform _trackedTransform;
+
+        private Vector3 _currentChunkCenterPosition;
+        private Queue<Vector3> _creationQueue = new();
+
         [Inject]
         public void Initialize(GameplayEntryPoint gameplayEntryPoint, ChunkLoader chunkLoader)
         {
             _chunkLoader = chunkLoader;
-            _chunkLoader.MapDataLoaded += AssignOffsetToLoad;
-            gameplayEntryPoint.PlayerCreated += OnPlayerCreated;
-        }
-
-        private void AssignOffsetToLoad(MapData mapData) => _offsetToLoad = mapData.ChunkBoundLength / 4;
-        
-        private async void OnPlayerCreated(Transform trackedTransform)
-        {
-            _trackedTransform = trackedTransform;
-            
-            _currentCoord = _chunkLoader.GetClosestChunkMatrixCoord(_trackedTransform.position);
-            
-            _currentChunk = await _chunkLoader.CreateChunk(_currentCoord);
-        }
-        
-        private void ClearTrackedTransformAroundMatrix()
-        {
-            for (int i = 0; i < _trackedTransformAroundMatrix.GetLength(0); ++i)
+            gameplayEntryPoint.PlayerCreated += transform =>
             {
-                for (int j = 0; j < _trackedTransformAroundMatrix.GetLength(1); ++j)
-                {
-                    _trackedTransformAroundMatrix[i, j] = false;
-                }
-            }
+                _trackedTransform = transform;
+                _currentChunkCenterPosition = _chunkLoader.GetClosestChunkCenterPosition(_trackedTransform.position, 5);
+                _chunkLoader.CreateChunk(_currentChunkCenterPosition);
+            };
         }
 
-        public void CheckPosition(Vector3 trackedPosition)
+
+        public void TryCreateChuksAround(Vector3 trackedPosition)
         {
-            if (_currentChunk == null)
-                throw new ArgumentException("there is no chunk to check position");
             
-            //Debug.Log((trackedPosition - _currentChunk.ChunkPosition).magnitude);
-            if ((trackedPosition - _currentChunk.ChunkPosition).magnitude < _offsetToLoad)
+            if ((trackedPosition - _currentChunkCenterPosition).magnitude < _chunkLoader.OffsetToLoadNewChunk)
                 return;
+            
+            var position = _trackedTransform.position;
 
-            ClearTrackedTransformAroundMatrix();
-
-            //[y, x]
-            if (trackedPosition.x - _currentChunk.ChunkPosition.x >= 0)
-                _trackedTransformAroundMatrix[1, 2] = true;
-            if (trackedPosition.x - _currentChunk.ChunkPosition.x < 0)
-                _trackedTransformAroundMatrix[1, 0] = true;
-
-            if (trackedPosition.z - _currentChunk.ChunkPosition.z >= 0)
-                _trackedTransformAroundMatrix[0, 1] = true;
-            if (trackedPosition.z - _currentChunk.ChunkPosition.z < 0)
-                _trackedTransformAroundMatrix[2, 1] = true;
-
-            if (_trackedTransformAroundMatrix[1, 0] && _trackedTransformAroundMatrix[0, 1])
-                _trackedTransformAroundMatrix[0, 0] = true;
-            if (_trackedTransformAroundMatrix[0, 1] && _trackedTransformAroundMatrix[1, 2])
-                _trackedTransformAroundMatrix[0, 2] = true;
-            if (_trackedTransformAroundMatrix[1, 0] && _trackedTransformAroundMatrix[2, 1])
-                _trackedTransformAroundMatrix[2, 0] = true;
-            if (_trackedTransformAroundMatrix[2, 1] && _trackedTransformAroundMatrix[1, 2])
-                _trackedTransformAroundMatrix[2, 2] = true;
-
-            //PrintMatrix();            
-            _chunkLoader.CreateChunks(_trackedTransformAroundMatrix, _currentCoord);
+            _currentChunkCenterPosition = _chunkLoader.GetClosestChunkCenterPosition(position,
+                _currentChunkCenterPosition, 1);
+            
+            var createPositions = _chunkLoader.FindChunkCenterPositionsAround(_currentChunkCenterPosition, 1);
+            
+            _chunkLoader.CreateChunks(createPositions);
         }
 
-        private void PrintMatrix()
+        private void TryDeleteChunksAround(Vector3 trackedPosition)
         {
-            StringBuilder sb = new StringBuilder();
-            for (int y = 0; y < _trackedTransformAroundMatrix.GetLength(0); ++y)
-            {
-                for (int x = 0; x < _trackedTransformAroundMatrix.GetLength(1); ++x)
-                {
-                    sb.Append(_trackedTransformAroundMatrix[y, x] + " ");
-                }
-
-                sb.Append("\n");
-            }
-            Debug.Log(sb.ToString());
+            _currentChunkCenterPosition = _chunkLoader.GetClosestChunkCenterPosition(trackedPosition,
+                _currentChunkCenterPosition, 1);
+            
+            var deletePositions = _chunkLoader.FindChunkCenterPositionsAround(_currentChunkCenterPosition, 2);
+            
+            _chunkLoader.DeleteChunks(deletePositions);
         }
+
         public void Tick()
         {
-            if (!_trackedTransform || _currentChunk == null)
+            if (!_trackedTransform)
                 return;
-
+            Debug.DrawLine(_currentChunkCenterPosition, _currentChunkCenterPosition+Vector3.up*100f, Color.green);
             var position = _trackedTransform.position;
-            CheckPosition(position);
-            TrySwitchChunk(_currentCoord, position);
-        }
-
-        private void TrySwitchChunk(Vector2Int currentCoord, Vector3 trackedPosition)
-        {
-            if ((trackedPosition - _currentChunk.ChunkPosition).magnitude < _chunkLoader.ChunkLength)
-                return;
-            var newChunkAndCoord = _chunkLoader.GetChunkAround(currentCoord, trackedPosition);
-            if (_currentChunk != newChunkAndCoord.Item1)
-            {
-                _chunkLoader.HideChunks(newChunkAndCoord.Item2, 1);
-            }
-            _currentChunk = newChunkAndCoord.Item1;
-            _currentCoord = newChunkAndCoord.Item2;
-            
+            TryDeleteChunksAround(position);
+            TryCreateChuksAround(position);
         }
     }
 }

@@ -2,15 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Autodesk.Fbx;
 using TerrainGeneration.Converter;
+using TerrainGeneration.SerializationData;
 using Unity.VisualScripting;
 using UnityEditor.Formats.Fbx.Exporter;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Utilities.SaveLoad;
 using Debug = UnityEngine.Debug;
-using TerrainData = TerrainGeneration.SerializationData.TerrainData;
+using TerrainData = TerrainGeneration.Data.TerrainData;
 
 namespace TerrainGeneration
 {
@@ -107,14 +109,20 @@ namespace TerrainGeneration
         {
             var data = await TerrainConverter.ConvertToSerializationFormat(mesh, chunkSize, terrainSizeX);
             Debug.Log("TerrainDataSaved");
-            BinarySaveLoadUtility.Save(data, Application.dataPath + "graphData");
+            BinarySaveLoadUtility.Save(data, Application.dataPath + "terrainData");
         }
 
         [ContextMenu("LoadTerrainData")]
-        public static void LoadTerrainData()
+        public async Task<TerrainData> LoadTerrainData()
         {
-            var data = TerrainConverter.ConvertToEngineFormat(
-                BinarySaveLoadUtility.Load<TerrainData>(Application.dataPath + "graphData"));
+            return await TerrainConverter.ConvertToEngineFormat(
+                BinarySaveLoadUtility.Load<TerrainSerializableData>(Application.dataPath + "terrainData"));
+        }
+        
+        public static async Task<TerrainData> LoadTerrainDataStatic()
+        {
+            return await TerrainConverter.ConvertToEngineFormat(
+                BinarySaveLoadUtility.Load<TerrainSerializableData>(Application.dataPath + "terrainData"));
         }
 
         private List<Vector3> l;

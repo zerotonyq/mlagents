@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using Character;
 using Cinemachine;
+using Gameplay.MapManagement.Graph;
 using Movement.Fsm.States;
 using Movement.Fsm.View;
 using Movement.Input.Base;
 using Player.Data;
 using ResourceManagement;
 using ResourceManagement.Data;
+using TerrainGeneration;
 using UnityEngine;
 using Zenject;
 
@@ -28,18 +30,26 @@ namespace DefaultNamespace
         public void Initialize(GameplayAssetPreloader gameplayAssetPreloader,
             IMovementInputManager inputManager,
             CinemachineVirtualCamera cinemachineVirtualCamera,
-            Timer.Timer timer)
+            Timer.Timer timer,
+            GraphManager graphManager)
         {
             _playerInputManager = inputManager;
-            
+
             PlayerCreated += transform =>
             {
                 cinemachineVirtualCamera.Follow = transform;
                 cinemachineVirtualCamera.GetCinemachineComponent<CinemachineTransposer>().m_FollowOffset =
-                    new Vector3(0, 30, -15);
+                    new Vector3(0, 20, -10);
             };
-            
-            gameplayAssetPreloader.StartPreloadingAsset(AssetName.Player.ToString(), PlayerAssetDownloaded);
+            PlayerCreated += transform =>
+            {
+                var node1 = graphManager.FindNearestNode(transform.position);
+                var node2 = graphManager.FindNearestNode(transform.position + new Vector3(10, 10, 10));
+
+                AStarPathfinder.FindPath(node1, node2);
+            };
+
+        gameplayAssetPreloader.StartPreloadingAsset(AssetName.Player.ToString(), PlayerAssetDownloaded);
 
             StartGame();
         }

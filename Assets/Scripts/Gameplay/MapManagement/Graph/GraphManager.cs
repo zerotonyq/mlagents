@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 using Node = TerrainGeneration.Node;
 
 namespace Gameplay.MapManagement.Graph
@@ -8,6 +9,11 @@ namespace Gameplay.MapManagement.Graph
     {
         private List<Node> nodes;
 
+        [Inject]
+        private void Initialize()
+        {
+            LoadGraph(Application.dataPath + "graphData");
+        }
         public void LoadGraph(string path)
         {
             nodes = GraphGenerator.LoadAndConvertGraph(path);

@@ -1,25 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using TerrainGeneration.SerializationData;
-using Unity.Collections;
-using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.AI;
-using TerrainData = TerrainGeneration.SerializationData.TerrainData;
 
 namespace TerrainGeneration.Converter
 {
     public class TerrainConverter
     {
-        public static Dictionary<Vector3, Mesh> ConvertToEngineFormat(TerrainData data)
+        public static async Task<Data.TerrainData> ConvertToEngineFormat(TerrainSerializableData serializableData)
         {
+            Data.TerrainData terrainData = new();
             Dictionary<Vector3, Mesh> engineData = new();
 
-            foreach (var chunkSerializableData in data.Chunks)
+            foreach (var chunkSerializableData in serializableData.Chunks)
             {
                 var mesh = new Mesh();
                 Vector3[] vertices = new Vector3[chunkSerializableData.Vertices.Length];
@@ -39,15 +34,18 @@ namespace TerrainGeneration.Converter
                 engineData.TryAdd(position, mesh);
             }
 
-            return engineData;
+            terrainData.ChunkMeshes = engineData;
+            terrainData.ChunkLength = serializableData.Chunks[0].Position.x*2;
+            return terrainData;
         }
 
-        public static async Task<TerrainData> ConvertToSerializationFormat(Mesh mesh, int chunkLength, int meshLength)
+        public static async Task<TerrainSerializableData> ConvertToSerializationFormat(Mesh mesh, int chunkLength,
+            int meshLength)
         {
             if ((meshLength * meshLength) % (chunkLength * chunkLength) != 0 || meshLength % chunkLength != 0)
                 throw new ArgumentException("mesh area must divisible without remainder");
 
-            TerrainData terrainData = new TerrainData();
+            TerrainSerializableData terrainSerializableData = new TerrainSerializableData();
 
             int count = meshLength * meshLength / (chunkLength * chunkLength);
 
@@ -71,13 +69,13 @@ namespace TerrainGeneration.Converter
 
                 var currentVector = currentChunkArray[^1] - currentChunkArray[0];
 
-                float3 chunkCenterPosition =
-                    currentChunkArray[0] + new float3(currentVector.x / 2, 0, currentVector.z / 2);
+                float3 chunkInitPosition = new float3(currentChunkArray[0].x + currentVector.x / 2, 0,
+                    currentChunkArray[0].z + currentVector.z / 2);
 
-                var data = new ChunkSerializableData(chunkCenterPosition, currentChunkArray,
+                var data = new ChunkSerializableData(chunkInitPosition, currentChunkArray,
                     CreateTriangles(chunkLength));
 
-                terrainData.AddChunk(data);
+                terrainSerializableData.AddChunk(data);
 
 
                 if ((i + 1) % (meshLength / chunkLength) == 0)
@@ -89,7 +87,7 @@ namespace TerrainGeneration.Converter
                     clMultY++;
             }
 
-            return terrainData;
+            return terrainSerializableData;
         }
 
         public static int[] CreateTriangles(int chunkSize)
