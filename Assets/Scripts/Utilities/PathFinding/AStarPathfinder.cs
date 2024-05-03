@@ -32,21 +32,26 @@ namespace TerrainGeneration
                 {
                     var currentPathTile = targetNode;
                     var path = new List<Node>();
-                    var count = 100;
+                    var count = 200;
                     while (currentPathTile != startNode)
                     {
                         path.Add(currentPathTile);
                         currentPathTile = currentPathTile.Connection;
                         count--;
-                        if (count < 0) throw new Exception();
+                        if (count < 0)
+                        {
+                         Debug.Log("bad path");
+                         break;
+                        }
                     }
 
                     path.Add(currentPathTile);
 
 #if UNITY_EDITOR
-                    Debug.Log(path.Count);
+                    Debug.Log("path count " + path.Count);
 #endif
-                
+
+        //            VisualizePath(path);
                     return path;
                 }
                 
@@ -72,8 +77,18 @@ namespace TerrainGeneration
                     }
                 }
             }
-Debug.Log("end pathfinding");
+            Debug.Log("pathfinding ended without result");
             return null;
+        }
+
+        public static void VisualizePath(List<Node> path)
+        {
+            var visualizer = new GameObject("path_visualizer").AddComponent<LineRenderer>();
+            visualizer.positionCount = path.Count;
+            for (int i = 0; i < path.Count; i++)
+            {
+                visualizer.SetPosition(i, path[i].Position);
+            }
         }
     }
 }

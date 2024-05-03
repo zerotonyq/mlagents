@@ -12,7 +12,7 @@ namespace StartScreen.Fsm
         private FsmBase.Fsm _fsm;
 
         [Inject]
-        public void Initialize(GameplayAssetPreloader assetPreloader, PlayerInputActions playerInputActions)
+        public void Initialize(AddressableAssetPreloader assetPreloader, PlayerInputActions playerInputActions)
         {
             _fsm = new FsmBase.Fsm();
 

@@ -13,7 +13,7 @@ namespace TerrainGeneration.Converter
         {
             Data.TerrainData terrainData = new();
             Dictionary<Vector3, Mesh> engineData = new();
-
+            
             foreach (var chunkSerializableData in serializableData.Chunks)
             {
                 var mesh = new Mesh();
@@ -29,13 +29,15 @@ namespace TerrainGeneration.Converter
 
                 var position = new Vector3(chunkSerializableData.Position.x, chunkSerializableData.Position.y,
                     chunkSerializableData.Position.z);
-
-
+                
+               
+                
                 engineData.TryAdd(position, mesh);
             }
 
             terrainData.ChunkMeshes = engineData;
             terrainData.ChunkLength = serializableData.Chunks[0].Position.x*2;
+            terrainData.TerrainLength = (float)Math.Sqrt(serializableData.Chunks.Count) * terrainData.ChunkLength;
             return terrainData;
         }
 

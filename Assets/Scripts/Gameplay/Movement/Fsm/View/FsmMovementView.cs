@@ -18,19 +18,19 @@ namespace Movement.Fsm.View
         private IMovementInputManager _movementInputManager;
         
         private bool _initialized = false;
-        
-        
+        private Rigidbody _rigidbody;
+        public void SetKinematic(bool i) => _rigidbody.isKinematic = i; 
         public void Initialize(IMovementInputManager movementInputManager)
         {
             _movementInputManager = movementInputManager;
             
-            _fsm = new();
+            _fsm = new FsmBase.Fsm();
             
-            var rb = GetComponent<Rigidbody>();
+            _rigidbody = GetComponent<Rigidbody>();
             
-            _fsm.AddState(new FsmStateIdle(_fsm, _movementInputManager, rb, accelerationRate));
-            _fsm.AddState(new FsmStateWalk(_fsm, _movementInputManager, rb, accelerationRate));
-            _fsm.AddState(new FsmStateBlocked(_fsm, _movementInputManager, rb, accelerationRate));
+            _fsm.AddState(new FsmStateIdle(_fsm, _movementInputManager, _rigidbody, accelerationRate));
+            _fsm.AddState(new FsmStateWalk(_fsm, _movementInputManager, _rigidbody, accelerationRate));
+            _fsm.AddState(new FsmStateBlocked(_fsm, _movementInputManager, _rigidbody, accelerationRate));
             
             _fsm.SetState<FsmStateIdle>();
             

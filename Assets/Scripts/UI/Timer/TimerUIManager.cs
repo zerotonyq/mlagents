@@ -16,11 +16,11 @@ namespace DefaultNamespace.UIManagement.GameplayHud
         private GameplayEntryPoint _gameplayEntryPoint;
         
         [Inject]
-        public void Initialize(GameplayEntryPoint gameplayEntryPoint, GameplayAssetPreloader gameplayAssetPreloader)
+        public void Initialize(GameplayEntryPoint gameplayEntryPoint, AddressableAssetPreloader addressableAssetPreloader)
         {
             _gameplayEntryPoint = gameplayEntryPoint;
             
-            gameplayAssetPreloader.StartPreloadingAsset(AssetName.TimerData.ToString(), TimerAssetDownloaded);
+            addressableAssetPreloader.StartPreloadingAsset(GameplayAssetName.TimerData.ToString(), TimerAssetDownloaded);
         }
         
         private void TimerAssetDownloaded(ScriptableObject so)

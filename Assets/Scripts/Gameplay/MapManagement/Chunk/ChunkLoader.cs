@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using ResourceManagement;
 using ResourceManagement.Data;
 using TerrainGeneration;
@@ -30,14 +31,21 @@ namespace Map
 
         public Dictionary<Vector3, Chunk.Chunk> InstantiatedChunks = new();
 
-        private GameplayAssetPreloader _gap;
+        private AddressableAssetPreloader _gap;
         private Material _chunkMaterial;
+        public Action MaterialInitialized;
 
         [Inject]
-        public async void Initialize(GameplayAssetPreloader gap)
+        public async void Initialize(AddressableAssetPreloader gap)
         {
             _gap = gap;
-            _gap.StartPreloadingAsset(AssetName.TerrainMaterial.ToString(), AssignChunkMaterial);
+            
+            _gap.StartPreloadingAsset(GameplayAssetName.TerrainMaterial.ToString(), (Material material) =>
+            {
+                AssignChunkMaterial(material);
+                MaterialInitialized?.Invoke();
+            });
+            
             TerrainData = await TerrainGenerator.LoadTerrainDataStatic();
 
             _offsetToLoadNewChunk = TerrainData.ChunkLength / 4;
@@ -50,7 +58,17 @@ namespace Map
 
         private void AssignChunkMaterial(Material m) => _chunkMaterial = m;
 
-        public Vector3 GetClosestChunkCenterPosition(Vector3 targetPosition, Vector3 previousChunkCenterPosition, int searchRadiusFactor)
+
+        public Chunk.Chunk GetChunk(Vector3 position)
+        {
+            if (InstantiatedChunks.TryGetValue(position, out Chunk.Chunk chunk))
+                return chunk;
+
+            return CreateChunk(position).Result;
+        }
+
+        public Vector3 GetClosestChunkCenterPosition(Vector3 targetPosition, Vector3 previousChunkCenterPosition,
+            int searchRadiusFactor)
         {
             float minDistance = 1000000f;
             Vector3 resultChunkCenterPos = Vector3.zero;
@@ -81,12 +99,12 @@ namespace Map
 
         public Vector3 GetClosestChunkCenterPosition(Vector3 targetPosition, int searchRadiusFactor)
         {
-            
-            var xFactor =  (int)targetPosition.x/(int)TerrainData.ChunkLength;
-            var yFactor =  (int)targetPosition.y/(int)TerrainData.ChunkLength;
-            var zFactor =  (int)targetPosition.z/(int)TerrainData.ChunkLength;
-            
-            var clampedPosition = new Vector3(xFactor, yFactor, zFactor) * TerrainData.ChunkLength + new Vector3(1, 0, 1) * TerrainData.ChunkLength/2;
+            var xFactor = (int)targetPosition.x / (int)TerrainData.ChunkLength;
+            var yFactor = (int)targetPosition.y / (int)TerrainData.ChunkLength;
+            var zFactor = (int)targetPosition.z / (int)TerrainData.ChunkLength;
+
+            var clampedPosition = new Vector3(xFactor, yFactor, zFactor) * TerrainData.ChunkLength +
+                                  new Vector3(1, 0, 1) * TerrainData.ChunkLength / 2;
 
 
             return GetClosestChunkCenterPosition(targetPosition, clampedPosition, searchRadiusFactor);
@@ -102,12 +120,12 @@ namespace Map
                 {
                     if (x == 0 && y == 0)
                         continue;
-                    
-                    if(onlyEdge && (Mathf.Abs(x) != distanceScale && Mathf.Abs(y) != distanceScale))
+
+                    if (onlyEdge && (Mathf.Abs(x) != distanceScale && Mathf.Abs(y) != distanceScale))
                         continue;
-                    
+
                     var currentCenter = new Vector3(chunkCenterPosition.x, 0, chunkCenterPosition.z) +
-                                        Vector3.right * x * TerrainData.ChunkLength  +
+                                        Vector3.right * x * TerrainData.ChunkLength +
                                         Vector3.forward * y * TerrainData.ChunkLength;
 
                     if (!ChunkPlanePositions.ContainsKey(currentCenter))
@@ -120,25 +138,26 @@ namespace Map
             return positions;
         }
 
-        public async void CreateChunk(Vector3 pos)
+        public async Task<Chunk.Chunk> CreateChunk(Vector3 pos)
         {
             if (InstantiatedChunks.TryGetValue(pos, out Chunk.Chunk chunk))
             {
                 chunk.Activate();
-                return;
+                return chunk;
             }
 
             if (!TerrainData.ChunkMeshes.TryGetValue(pos, out Mesh chunkMesh))
             {
                 Debug.Log(
                     "Cannot create chunk. There is no chunk in chunkDatas at this position " + pos);
-                return;
+                return null;
             }
 
             var newChunk = await Chunk.Chunk.Construct(chunkMesh,
                 pos - new Vector3(TerrainData.ChunkLength / 2f, 0, TerrainData.ChunkLength / 2f), _chunkMaterial);
 
             InstantiatedChunks.Add(pos, newChunk);
+            return newChunk;
         }
 
         public void CreateChunks(Queue<Vector3> positions)

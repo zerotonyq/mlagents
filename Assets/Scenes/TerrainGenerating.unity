@@ -659,12 +659,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ed6de08ee46f4f4caa3ec30717516cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minDischargeAngle: 30
+  minDischargeAngle: 10
   maxGraphChunkLengthX: 20
   maxGraphChunkLengthY: 20
-  maxAngleToAssignNeighbor: 45
+  maxAngleToAssignNeighbor: 20
   posStart: {fileID: 1083719000}
   posTarget: {fileID: 804210237}
+  gizmo: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

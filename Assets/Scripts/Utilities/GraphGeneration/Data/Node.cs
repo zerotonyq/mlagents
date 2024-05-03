@@ -20,6 +20,7 @@ namespace TerrainGeneration
         public Node Connection { get; private set; }
         
         public List<Node> Neighbors { get; private set; } = new();
+        
         public float G { get; private set; }
         private float H { get; set; }
         

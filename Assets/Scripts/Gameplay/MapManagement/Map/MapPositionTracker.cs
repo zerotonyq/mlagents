@@ -59,8 +59,9 @@ namespace Map
         {
             if (!_trackedTransform)
                 return;
-            Debug.DrawLine(_currentChunkCenterPosition, _currentChunkCenterPosition+Vector3.up*100f, Color.green);
+            
             var position = _trackedTransform.position;
+            
             TryDeleteChunksAround(position);
             TryCreateChuksAround(position);
         }

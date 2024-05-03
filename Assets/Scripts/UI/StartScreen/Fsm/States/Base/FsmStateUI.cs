@@ -6,9 +6,9 @@ namespace StartScreen.Fsm.States.Base
 {
     public abstract class FsmStateUI : FsmState
     {
-        protected GameplayAssetPreloader AssetPreloader;
+        protected AddressableAssetPreloader AssetPreloader;
         protected PlayerInputActions PlayerInputActions;
-        public FsmStateUI(FsmBase.Fsm fsm, GameplayAssetPreloader assetPreloader,
+        public FsmStateUI(FsmBase.Fsm fsm, AddressableAssetPreloader assetPreloader,
             PlayerInputActions playerInputActions) : base(fsm)
         {
             AssetPreloader = assetPreloader;

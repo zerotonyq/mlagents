@@ -13,7 +13,7 @@ namespace StartScreen.Fsm.States
     {
 
         private MenuContainer _menuContainer;
-        public FsmStateMenu(FsmBase.Fsm fsm, GameplayAssetPreloader assetPreloader,
+        public FsmStateMenu(FsmBase.Fsm fsm, AddressableAssetPreloader assetPreloader,
             PlayerInputActions playerInputActions) :
             base(fsm, assetPreloader, playerInputActions)
         {
@@ -32,7 +32,7 @@ namespace StartScreen.Fsm.States
 
         private void LoadScrollView()
         {
-            AssetPreloader.StartPreloadingAsset(AssetName.Menu.ToString(), (GameObject o) =>
+            AssetPreloader.StartPreloadingAsset(GameplayAssetName.Menu.ToString(), (GameObject o) =>
             {
                 _menuContainer = GameObject.Instantiate(o, null).GetComponent<MenuContainer>();
                 _menuContainer.playButton.Triggered += () => SceneManager.LoadSceneAsync(1);

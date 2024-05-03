@@ -5,7 +5,7 @@ namespace StartScreen.Fsm.States
 {
     public class FsmStateSettings : FsmStateUI
     {
-        public FsmStateSettings(FsmBase.Fsm fsm, GameplayAssetPreloader assetPreloader,
+        public FsmStateSettings(FsmBase.Fsm fsm, AddressableAssetPreloader assetPreloader,
             PlayerInputActions playerInputActions) : base(fsm, assetPreloader, playerInputActions)
         {
         }

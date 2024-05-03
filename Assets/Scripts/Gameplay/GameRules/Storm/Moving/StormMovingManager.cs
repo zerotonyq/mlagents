@@ -1,21 +1,38 @@
-﻿using Movement.Fsm.View;
+﻿using DefaultNamespace.Movement.Input;
+using Movement.Fsm.States;
+using Movement.Fsm.View;
 using UnityEngine;
+using Zenject;
 
 namespace DefaultNamespace.Storm.Moving
 {
-    public class StormMovingManager
+    public class StormMovingManager : ITickable
     {
-        private readonly FsmMovementView _movementView;
+        private FsmMovementView _movementView;
         
-        public StormMovingManager(FsmMovementView movementVIew)
+        [Inject]
+        public void Initialize()
         {
-            _movementView = movementVIew;
+            _movementView = new GameObject("MovementStorm").AddComponent<FsmMovementView>();
+            _movementView.Initialize(new ConstantMovementInputManager(new Vector2(0,1)));
+            _movementView.SetKinematic(true);
+            _movementView.Fsm.SetState<FsmStateBlocked>();
         }
 
-        public static StormMovingManager Construct()
+        public void StartMoving()
         {
-            var fsmMovement = new GameObject("MovementStorm").AddComponent<FsmMovementView>();
-            return new StormMovingManager(fsmMovement);
+            Debug.Log("start moving storm");
+            _movementView.Fsm.SetState<FsmStateWalk>();
+        }
+
+        public void StopMoving()
+        {
+            _movementView.Fsm.SetState<FsmStateBlocked>();
+        }
+
+        public void Tick()
+        {
+            _movementView.Fsm.Update();
         }
     }
 }

@@ -50,7 +50,6 @@ namespace Utilities.GraphGenerator.Converter
                 if (graph.TryGetValue(nodeData.Position, out Node nn))
                 {
                     n = nn;
-                    Debug.Log(nn.Position);
                 }
                 else
                 {

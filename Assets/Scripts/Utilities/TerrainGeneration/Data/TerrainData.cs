@@ -7,5 +7,6 @@ namespace TerrainGeneration.Data
     {
         public Dictionary<Vector3, Mesh> ChunkMeshes = new();
         public float ChunkLength;
+        public float TerrainLength;
     }
 }

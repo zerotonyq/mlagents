@@ -13,7 +13,7 @@ namespace StartScreen.Fsm.States
     {
         private IntroScreenContainer _introScreenContainer;
 
-        public FsmStateIntroScreen(FsmBase.Fsm fsm, GameplayAssetPreloader assetPreloader,
+        public FsmStateIntroScreen(FsmBase.Fsm fsm, AddressableAssetPreloader assetPreloader,
             PlayerInputActions playerInputActions) : base(fsm, assetPreloader, playerInputActions)
         {
         }
@@ -33,7 +33,7 @@ namespace StartScreen.Fsm.States
 
         private void LoadIntroScreen()
         {
-            AssetPreloader.StartPreloadingAsset(AssetName.Intro.ToString(),
+            AssetPreloader.StartPreloadingAsset(GameplayAssetName.Intro.ToString(),
                 (GameObject o) =>
                 {
                     _introScreenContainer = GameObject.Instantiate(o, null).GetComponent<IntroScreenContainer>();

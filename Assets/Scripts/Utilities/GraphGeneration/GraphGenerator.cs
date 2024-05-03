@@ -67,8 +67,8 @@ public class GraphGenerator : MonoBehaviour
         var rangeY = (n3.Position - n1.Position).magnitude;
 
 
-        int countY = (int)(rangeY / maxGraphChunkLengthY) + 2;
-        int countX = (int)(rangeX / maxGraphChunkLengthX) + 2;
+        int countY = (int)(rangeY / maxGraphChunkLengthY) ;
+        int countX = (int)(rangeX / maxGraphChunkLengthX) ;
 
 
         StartCoroutine(DischargeCoroutine(n1, countY, countX));
@@ -78,19 +78,29 @@ public class GraphGenerator : MonoBehaviour
     {
         ResetNodes();
 
-        for (int y = 0; y <= countY; y++)
+        for (int y = 0; y < _yDomainDimention; y+=(int)maxGraphChunkLengthY)
         {
-            for (int x = 0; x <= countX; x++)
+            for (int x = 0; x < _xDomainDimention; x+=(int)maxGraphChunkLengthX)
             {
-                var n = FindNearest(n1.Position +
-                                    new Vector3(maxGraphChunkLengthX * (x + 1) / 2, 0,
-                                        maxGraphChunkLengthY * (y + 1) / 2));
-
-                DischargeGrid(n, maxGraphChunkLengthX * x, maxGraphChunkLengthY * y);
+                DischargeGrid(_domains2Dim[y, x],0);
 
                 yield return new WaitForSeconds(1f);
             }
         }
+        /*for (int y = 0; y <= countY; y++)
+        {
+            for (int x = 0; x <= countX; x++)
+            {
+                var n = FindNearest(n1.Position +
+                                    new Vector3(maxGraphChunkLengthX * x, 0,
+                                        maxGraphChunkLengthY *y));
+
+                
+                DischargeGrid(n,0);
+
+                yield return new WaitForSeconds(1f);
+            }
+        }*/
 
 #if UNITY_EDITOR
         Debug.Log("END");
@@ -141,15 +151,17 @@ public class GraphGenerator : MonoBehaviour
     }
 
 
-    private void DischargeGrid(Node n, float maxX, float maxY)
+    private void DischargeGrid(Node n, int depth)
     {
         n.SetDischarged();
 
-        if (n.Position.x > maxX || n.Position.z > maxY)
+        if (depth > 100)
             return;
-
+        
         for (int i = 0; i < n.Neighbors.Count; i++)
         {
+            if (n.Neighbors[i].Discharged)
+                continue;
             if (Vector3.Angle(n.Neighbors[i].Normal, n.Normal) <= minDischargeAngle)
             {
                 var nextNeighbor = FindNearNeighbor(n.Position,
@@ -167,10 +179,9 @@ public class GraphGenerator : MonoBehaviour
                 n.Neighbors[i] = nextNeighbor;
             }
 
-            if (n.Neighbors[i].Discharged)
-                continue;
+            
 
-            DischargeGrid(n.Neighbors[i], maxX, maxY);
+            DischargeGrid(n.Neighbors[i] ,depth + 1);
         }
     }
 
@@ -179,7 +190,7 @@ public class GraphGenerator : MonoBehaviour
     {
         var currentDist = float.MaxValue;
         Node currentNeighbor = null;
-
+        
         for (int i = 0; i < neighbors.Count; i++)
         {
             var neighbor = neighbors[i];
@@ -192,8 +203,9 @@ public class GraphGenerator : MonoBehaviour
 
             var dirN = neighbor.Position - start;
 
+            /*
             if (Vector3.Angle(dir, dirN) > maxAngleToAssignNeighbor)
-                continue;
+                continue;*/
 
             if ((neighbor.Position - dir).magnitude < currentDist)
             {
@@ -280,7 +292,8 @@ public class GraphGenerator : MonoBehaviour
                 if (_domains2Dim[y, x].Deactivated)
                     continue;
 
-                Gizmos.DrawSphere(_domains2Dim[y, x].Position, 0.1f);
+                Gizmos.color = Color.green;
+                //Gizmos.DrawSphere(_domains2Dim[y, x].Position, 0.1f);
 
                 foreach (var neighbor in _domains2Dim[y, x].Neighbors)
                 {

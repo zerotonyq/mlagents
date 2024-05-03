@@ -7,11 +7,14 @@ namespace Movement.Fsm.States
 {
     public class FsmStateWalk : FsmStateMovement
     {
-        public FsmStateWalk(FsmBase.Fsm fsm, 
-            IMovementInputManager movementInputManager, 
-            Rigidbody rb, 
+
+        public FsmStateWalk(FsmBase.Fsm fsm,
+            IMovementInputManager movementInputManager,
+            Rigidbody rb,
             float accelerationRate) :
-            base(fsm, movementInputManager, rb, accelerationRate) { }
+            base(fsm, movementInputManager, rb, accelerationRate)
+        {
+        }
 
         public override void Enter()
         {
@@ -34,10 +37,19 @@ namespace Movement.Fsm.States
 
         private void Move(Vector2 direction)
         {
-            _rigidbody.velocity = new Vector3(
+            if (_rigidbody.isKinematic)
+            {
+                _rigidbody.transform.position += 
+                    new Vector3(direction.x * _accelerationRate, 0, direction.y * _accelerationRate) * Time.deltaTime;
+            }
+            else
+            {   
+                _rigidbody.velocity = new Vector3(
                 direction.x * _accelerationRate, 
                 _rigidbody.velocity.y,
                 direction.y * _accelerationRate);
+                
+            }
         }
     }
 }

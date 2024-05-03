@@ -1,5 +1,8 @@
 ﻿using Cinemachine;
 using DefaultNamespace;
+using DefaultNamespace.Storm;
+using DefaultNamespace.Storm.Moving;
+using DefaultNamespace.StormFlower;
 using Gameplay.MapManagement.Graph;
 using Map;
 using Movement.Input.Base;
@@ -21,6 +24,7 @@ namespace DI
             Container.Bind<GameplayEntryPoint>().AsSingle().NonLazy();
             
             Container.Bind<ChunkLoader>().AsSingle().NonLazy();
+            Container.Bind<AssignObjectToChunkManager>().AsSingle().NonLazy();
             Container.Bind<GraphManager>().AsSingle().NonLazy();
             Container.Bind<ITickable>().To<MapPositionTracker>().AsSingle().NonLazy();
             
@@ -28,8 +32,10 @@ namespace DI
             {
                 context.Container.Resolve<TickableManager>().Add(o as ITickable);
             } );
-            
-            
+            Container.Bind<StormMovingManager>().AsSingle().NonLazy();
+            Container.Bind<StormCycleManager>().AsSingle().NonLazy();
+            Container.Bind<StormFlowerGraphManager>().AsSingle().NonLazy();
+
             
         }
     }

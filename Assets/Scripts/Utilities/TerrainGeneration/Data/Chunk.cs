@@ -27,7 +27,12 @@ namespace Map.Chunk
             _instance = instance;
         }
 
-        public void AddObjectToChunk(GameObject obj) => _gameObjects.Add(obj);
+        public void AddObjectToChunk(GameObject obj)
+        {
+
+            obj.transform.parent = _instance.transform;
+            _gameObjects.Add(obj);
+        }
 
         public void RemoveObjectFromChunk(GameObject obj)
         {

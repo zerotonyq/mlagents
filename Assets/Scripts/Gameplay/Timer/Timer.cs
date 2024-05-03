@@ -20,8 +20,11 @@ namespace Timer
         public bool Looped => _looped;
         
         public void StartTimer() => _paused = false;
-        
-        public void StopTimer() => _paused = true;
+
+        public void StopTimer()
+        {
+            _paused = true;  
+        } 
 
         public void SetLooped(bool i) => _looped = i;
 
